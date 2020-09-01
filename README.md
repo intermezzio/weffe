@@ -16,11 +16,11 @@ To create a blank virtual webcam (that this script can stream to), run the follo
 ```sh
 sudo modprobe v4l2loopback video_nr=2
 ```
-Next, clone this repo and save a `self-recording.mkv` video file in this directory. This file should be `MPEG4-AVC (H264)`, and can be easily created using the screen recording tool [Guvcview](http://guvcview.sourceforge.net/).
+Next, clone this repo and save a video file in this directory. Most video formats should work with this script. I recommend using [Guvcview] (http://guvcview.sourceforge.net/) for taking videos using the webcam.
 
 Finally, run the video looper script to generate a lengthened video and stream it to `/dev/video2`.
 ```
-sh video_looper_complete.sh
+sh video_looper_complete.sh your_video.mp4
 ```
 
 This will create a longer mp4 file that gets streamed to the webcam.
@@ -30,7 +30,7 @@ This will create a longer mp4 file that gets streamed to the webcam.
 This program first accepts an input video and processes it. To prevent the video from looking choppy when the clip ends and restarts, this script plays the video in reverse each time the video completes. This way, the video is duplicated, reversed, and concatenated to itself to create a larger video that is twice as long as the original. This processing takes place in the `video_looper_complete.sh` script.
 The video is then streamed to a virtual webcam using ffmpeg. This stream is created with the `webcam_loop.sh` script. If you already have a video (any format) that you want to stream to your webcam, you can just run this script:
 ```
-sh webcam_loop.sh your_video.mp4
+sh webcam_loop.sh your_unprocessed_video.mp4
 ```
 
 ## Tips
