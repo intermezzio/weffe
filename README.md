@@ -4,8 +4,11 @@ This series of scripts takes a video and streams it to a fake webcam, specifical
 
 ## Requirements
 
-This shell script uses ffmpeg for video manipulation, which is available on Windows, MacOS, and Linux.
+This shell script uses ffmpeg and v4l2loopback-dkms for video manipulation, which is available on Windows, MacOS, and Linux.
 However, the script to stream to a webcam only works on Linux.
+```sh
+sudo apt-get install v4l2loopback-dkms
+```
 
 ## Usage
 
