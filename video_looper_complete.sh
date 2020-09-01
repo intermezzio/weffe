@@ -1,27 +1,28 @@
-video="self-recording"
-mkv=".mkv"
-norm="$video$mkv"
-rev="$video-reversed$mkv"
+norm=$1
+rev="rev-$1"
+now="$(date)"
 echo $norm
 echo $rev
 
 ffmpeg -i $norm -vf reverse $rev
 # ffmpeg -i $rev -vf reverse $norm
 
-ffmpeg -i $norm -c copy v1.mp4
-ffmpeg -i $rev -c copy v2.mp4
+printf "file '%s'\nfile '%s'" "$norm" "$rev" > "$now.txt"
 
-ffmpeg -i v1.mp4 -c copy -bsf:v h264_mp4toannexb -f mpegts input1.ts
-ffmpeg -i v2.mp4 -c copy -bsf:v h264_mp4toannexb -f mpegts input2.ts
-ffmpeg -i "concat:input1.ts|input2.ts" -c copy "$video.mp4"
+ffmpeg -f concat -i "$now.txt" -c copy "$now.mp4"
 
-now="$(date)"
+# ffmpeg -i $norm -c copy v1.mp4
+# ffmpeg -i $rev -c copy v2.mp4
 
-mkdir "$now"
-cp "$video.mp4" "$now" 
+# ffmpeg -i v1.mp4 -c copy -bsf:v h264_mp4toannexb -f mpegts input1.ts
+# ffmpeg -i v2.mp4 -c copy -bsf:v h264_mp4toannexb -f mpegts input2.ts
 
-rm v1.mp4 v2.mp4 input1.ts input2.ts $rev "$video.mp4"
+# ffmpeg -i "concat:input1.ts|input2.ts" -c copy "$now.mp4"
+
+# ffmpeg -f concat -safe 0 -i mylist.txt -c copy "$now 2.mp4"
+
+# rm v1.mp4 v2.mp4 input1.ts input2.ts $rev
 
 # ffmpeg -stream_loop -1 -re -i "$video.mp4" -map 0:v -f v4l2 /dev/video2
 
-sh webcam_loop.sh "$now/$video.mp4"
+sh webcam_loop.sh "$now.mp4"
