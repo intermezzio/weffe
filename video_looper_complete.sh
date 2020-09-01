@@ -11,6 +11,8 @@ printf "file '%s'\nfile '%s'" "$norm" "$rev" > "$now.txt"
 
 ffmpeg -f concat -i "$now.txt" -c copy "$now.mp4"
 
+rm $rev "$now.txt"
+
 # ffmpeg -i $norm -c copy v1.mp4
 # ffmpeg -i $rev -c copy v2.mp4
 
