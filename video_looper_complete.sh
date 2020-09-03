@@ -51,14 +51,24 @@ done
 if [[ $toptext != false ]] && [[ $bottomtext != false ]]
 then
 	toptext=$(echo $toptext | tr '[:lower:]' '[:upper:]')
-	bottomtext=$(echo $bottomtext | tr '[:lower:]' '[:upper:]')
+	printf "%s\n" "$toptext"
+	toptextlen=$(expr length "$toptext")
+	printf "%s\n" "$toptextlen"
+	toptextfs=$((240 / ($toptextlen / 5 + 1) ))
+	printf "%s\n" $toptextfs
 
+	bottomtext=$(echo $bottomtext | tr '[:lower:]' '[:upper:]')
+	bottomtextlen=$(expr length "$bottomtext")
+	printf "%s\n" "$bottomtextlen"
+	bottomtextfs=$((240 / ($bottomtextlen / 5 + 1) ))
+	printf "%s\n" $bottomtextfs
+	
 	memestr="drawtext=font='$font': \
 		text='$toptext': x=(w-tw)/2: y=(h-text_h)/8: \
-		fontsize=64: borderw=4: fontcolor=AntiqueWhite, \
+		fontsize=$toptextfs: borderw=4: fontcolor=AntiqueWhite, \
 		drawtext=font='$font':\
 		text='$bottomtext':x=(w-tw)/2:y=7*(h-text_h)/8: \
-		fontsize=64: borderw=4: fontcolor=AntiqueWhite,"
+		fontsize=$bottomtextfs: borderw=4: fontcolor=AntiqueWhite,"
 fi
 
 if [[ $rotate = true ]]
