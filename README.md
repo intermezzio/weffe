@@ -16,7 +16,7 @@ To create a blank virtual webcam (that this script can stream to), run the follo
 ```sh
 sudo modprobe v4l2loopback video_nr=2
 ```
-Next, clone this repo and save a video file in this directory. Most video formats should work with this script. I recommend using [Guvcview] (http://guvcview.sourceforge.net/) for taking videos using the webcam.
+Next, clone this repo and save a video file in this directory. Most video formats should work with this script. I recommend using [Guvcview](http://guvcview.sourceforge.net/) for taking videos using the webcam.
 
 Finally, run the video looper script to generate a lengthened video and stream it to `/dev/video2`.
 ```
