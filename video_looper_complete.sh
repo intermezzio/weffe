@@ -11,8 +11,8 @@ input=0
 output=2
 watermark=false
 
-while getopts ":v:rsi:o:w:" opt; do
-  echo $opt
+while getopts ":hv:rsi:o:w:" opt; do
+  # echo $opt
   case $opt in
     v) video="$OPTARG"
     ;;
@@ -26,7 +26,10 @@ while getopts ":v:rsi:o:w:" opt; do
 	;;
 	w) watermark="$OPTARG"
 		printf "watermark: $watermark"
-	;;
+    ;;
+    h) cat help.md
+        exit 0
+    ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
   esac
@@ -50,7 +53,7 @@ then # if streaming a video
 		now="$(date)"
 
 		ffmpeg -i $norm -vf reverse $rev
-		
+
 		printf "file '%s'\nfile '%s'" "$norm" "$rev" > "$now.txt"
 
 		ffmpeg -f concat -i "$now.txt" -c copy "$now.mp4"
