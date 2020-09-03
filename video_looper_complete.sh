@@ -4,14 +4,21 @@
 # -i 0 (default video0 input)
 # -o 2 (default video2 output)
 # -w watermark.png
+# -t top text (meme)
+# -b bottom text (meme)
+# -f font (meme)
 
 video=false
 process=true
 input=0
 output=2
 watermark=false
+toptext=false
+bottomtext=false
+font="Arial"
+memestr=""
 
-while getopts ":hv:rsi:o:w:" opt; do
+while getopts ":hv:rsi:o:w:t:b:f:" opt; do
   # echo $opt
   case $opt in
     v) video="$OPTARG"
@@ -27,6 +34,12 @@ while getopts ":hv:rsi:o:w:" opt; do
 	w) watermark="$OPTARG"
 		printf "watermark: $watermark"
     ;;
+    t) toptext="$OPTARG"
+	;;
+	b) bottomtext="$OPTARG"
+	;;
+	f) font="$OPTARG"
+	;;
     h) cat help.md
         exit 0
     ;;
@@ -35,12 +48,22 @@ while getopts ":hv:rsi:o:w:" opt; do
   esac
 done
 
-if [[ $rotate = true ]] && [[ $watermark = true ]]
+if [[ $toptext != false ]] && [[ $bottomtext != false ]]
+then
+	toptext=$(echo $toptext | tr '[:lower:]' '[:upper:]')
+	bottomtext=$(echo $bottomtext | tr '[:lower:]' '[:upper:]')
+
+	memestr="drawtext=font='$font': \
+		text='$toptext': x=(w-tw)/2: y=(h-text_h)/8: \
+		fontsize=64: borderw=4: fontcolor=AntiqueWhite, \
+		drawtext=font='$font':\
+		text='$bottomtext':x=(w-tw)/2:y=7*(h-text_h)/8: \
+		fontsize=64: borderw=4: fontcolor=AntiqueWhite,"
+fi
+
+if [[ $rotate = true ]]
 then
 	rotatestr="rotate=2*PI*t/6,"
-elif [[ $watermark = true ]]
-then
-	rotatestr=""
 fi
 
 
@@ -65,22 +88,19 @@ then # if streaming a video
 
 	if [[ $rotate = true ]]
 	then # rotate video and stream it
-		ffmpeg -stream_loop -1 -re -i "$video" -vf rotate=2*PI*t/6 -map 0:v -f v4l2 "/dev/video$output"
+		ffmpeg -stream_loop -1 -re -i "$video" -vf "$memestr $rotatestr format=yuv420p[v]" -map 0:v -f v4l2 "/dev/video$output"
 	else
-		printf "streaming, video = $video"
-		ffmpeg -stream_loop -1 -re -i "$video" -map 0:v -f v4l2 "/dev/video$output"
+		ffmpeg -stream_loop -1 -re -i "$video" -vf "$memestr $rotatestr format=yuv420p[v]" -map 0:v -f v4l2 "/dev/video$output"
 	fi
 else # if streaming from a webcam
 	if [[ $watermark != false ]]
 	then
-		printf "watermark me"
 		ffmpeg -i "/dev/video$input" -i "$watermark" \
-			-filter_complex "[1][0]scale2ref[i][m];[m][i]overlay=format=auto,$rotatestr format=yuv420p[v]" \
+			-filter_complex "[1][0]scale2ref[i][m];[m][i]overlay=format=auto,$memestr $rotatestr format=yuv420p[v]" \
 			-map "[v]" -f v4l2 "/dev/video$output"
 	else
-		printf "ha no watermark?"
 		ffmpeg -i "/dev/video$input" \
-			-filter_complex "$rotatestr format=yuv420p[v]" \
+			-filter_complex "$memestr $rotatestr format=yuv420p[v]" \
 			-map "[v]" -f v4l2 "/dev/video$output"
 	fi
 fi

@@ -2,7 +2,7 @@ Webcam Video Effects
 
 Stream a video to a fake webcam or add effects to your current webcam video stream.
 
-./video_looper_complete.sh [-r] [-s] [-h] [-i number] [-o number] [-v filename] [-w filename]
+./video_looper_complete.sh [-r] [-s] [-h] [-i number] [-o number] [-v filename] [-w filename] [-t text] [-b text] [-f text]
 
 -r
     slowly rotate the image or video over time
@@ -23,4 +23,13 @@ Stream a video to a fake webcam or add effects to your current webcam video stre
     video that you want sent to the webcam; if no video is selected, use the input video stream
 
 -w filename
-    watermark image to overlay on top of a video stream
+    watermark image to overlay on top of a video streami
+
+-t text
+    top text for meme-ifying a video stream; must also have bottom text
+
+-b text
+    bottom text for meme-ifying a video stream; must also have top text
+
+-f text (default 'Arial')
+    font for meme-ified text
