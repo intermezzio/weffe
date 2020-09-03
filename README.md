@@ -12,18 +12,35 @@ sudo apt-get install v4l2loopback-dkms
 
 ## Usage
 
+### Setup
+
 To create a blank virtual webcam (that this script can stream to), run the following command:
 ```sh
 sudo modprobe v4l2loopback video_nr=2
 ```
-Next, clone this repo and save a video file in this directory. Most video formats should work with this script. I recommend using [Guvcview](http://guvcview.sourceforge.net/) for taking videos using the webcam.
+### Looping a Video
+Clone this repo and save a video file in this directory. Most video formats should work with this script. I recommend using [Guvcview](http://guvcview.sourceforge.net/) for taking videos using the webcam.
 
-Finally, run the video looper script to generate a lengthened video and stream it to `/dev/video2`.
+Then, run the video looper script to generate a lengthened video and stream it to `/dev/video2`.
 ```
 sh video_looper_complete.sh -v your_video.mp4
 ```
+This will create a longer mp4 file that gets streamed to the webcam. By default, the video gets duplicated and played in reverse after it completes so that there is no "jump" from the last frame to the first. To remove this functionality (and never play the video in reverse), add the `-s` flag.
 
-This will create a longer mp4 file that gets streamed to the webcam.
+### Meme-ifying a Video
+
+Adding top and bottom text to a video turns your video camera into a large meme, adding white text (with a black border) to the inputted media.
+```
+sh video_looper_complete.sh -t "TOP TEXT HERE" -b "BOTTOM TEXT HERE" -f "Impact"
+```
+Additionally, the `-f` flag allows you to select a font (default Arial, although Impact looks better if you've installed it).
+
+### Image Overlay
+
+Add an image over your screen - like a picture frame, company logo, or anything that you want using the `-w` flag (watermark). This should have transparency so that your video can still be seen behind it.
+```
+sh video_looper_complete.sh -w company_logo.png
+```
 
 For more options, run the following command (or read the help page):
 ```
