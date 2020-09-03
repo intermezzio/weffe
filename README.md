@@ -1,6 +1,6 @@
-# Fake Webcam Video Generator
+# Webcam Video Effects 
 
-This series of scripts takes a video and streams it to a fake webcam, specifically `/dev/video2`. After the script runs, you can select the extra webcam as your video source on a zoom call, webex call, or any video call.
+This series of scripts can stream a video or add photo effects to your webcam. This then sends that edited video stream to a new webcam, specifically `/dev/video2`. After the script runs, you can select the extra webcam as your video source on a zoom call, webex call, or any video call.
 
 ## Requirements
 
@@ -20,17 +20,22 @@ Next, clone this repo and save a video file in this directory. Most video format
 
 Finally, run the video looper script to generate a lengthened video and stream it to `/dev/video2`.
 ```
-sh video_looper_complete.sh your_video.mp4
+sh video_looper_complete.sh -v your_video.mp4
 ```
 
 This will create a longer mp4 file that gets streamed to the webcam.
+
+For more options, run the following command (or read the help page):
+```
+sh video_looper_complete.sh -h
+```
 
 ## What this program does
 
 This program first accepts an input video and processes it. To prevent the video from looking choppy when the clip ends and restarts, this script plays the video in reverse each time the video completes. This way, the video is duplicated, reversed, and concatenated to itself to create a larger video that is twice as long as the original. This processing takes place in the `video_looper_complete.sh` script.
 The video is then streamed to a virtual webcam using ffmpeg. This stream is created with the `webcam_loop.sh` script. If you already have a video (any format) that you want to stream to your webcam, you can just run this script:
 ```
-sh webcam_loop.sh your_unprocessed_video.mp4
+sh video_looper_complete.sh -sv your_unprocessed_video.mp4
 ```
 
 ## Tips
