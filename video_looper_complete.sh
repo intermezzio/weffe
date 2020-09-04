@@ -71,7 +71,7 @@ then
 		fontsize=$bottomtextfs: fontcolor='AntiqueWhite': borderw=4, "
 fi
 
-if [[ $rotate = true ]]
+if [[ $rotate != false ]]
 then
 	rotatestr="rotate=2*PI*t/6,"
 fi
@@ -96,10 +96,15 @@ then # if streaming a video
 		video="$now.mp4"
 	fi
 
-	if [[ $rotate = true ]]
+	if [[ $watermark != false ]]
 	then # rotate video and stream it
-		ffmpeg -stream_loop -1 -re -i "$video" -vf "$memestr $rotatestr format=yuv420p[v]" \
-			-map 0:v -f v4l2 "/dev/video$output"
+		# ffmpeg -stream_loop -1 -re -i "$video" -vf "$memestr $rotatestr format=yuv420p[v]" \
+			# -map 0:v -f v4l2 "/dev/video$output"
+		echo "Wassup"
+		ffmpeg -stream_loop -1 -re -i "$video" -i "$watermark" \
+			-filter_complex "[1][0]scale2ref[i][m];[m][i]overlay=format=auto, \
+			$memestr $rotatestr format=yuv420p[v]" \
+			-map "[v]" -f v4l2 "/dev/video$output"
 	else
 		ffmpeg -stream_loop -1 -re -i "$video" -vf "$memestr $rotatestr format=yuv420p[v]" \
 			-map 0:v -f v4l2 "/dev/video$output"
