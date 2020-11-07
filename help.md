@@ -2,7 +2,7 @@ Webcam Video Effects
 
 Stream a video to a fake webcam or add effects to your current webcam video stream.
 
-./video_looper_complete.sh [-r] [-s] [-h] [-i number] [-o number] [-v filename] [-w filename] [-t text] [-b text] [-f text]
+./video_looper_complete.sh [-r] [-s] [-h] [-i number] [-o number] [-v filename] [-w filename] [-t text] [-b text] [-f text] [-z pattern]
 
 -r
     slowly rotate the image or video over time
@@ -33,3 +33,7 @@ Stream a video to a fake webcam or add effects to your current webcam video stre
 
 -f text (default 'Arial')
     font for meme-ified text
+
+-z pattern
+    rotation as a function of time; not to be used with -r
+    Syntax for this rotation can be found here https://ffmpeg.org/ffmpeg-all.html#Examples-136

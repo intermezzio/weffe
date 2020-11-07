@@ -17,8 +17,10 @@ toptext=false
 bottomtext=false
 font="Arial"
 memestr=""
+rotate=false
+rotatestr=""
 
-while getopts ":hv:rsi:o:w:t:b:f:" opt; do
+while getopts ":hv:rsi:o:w:t:b:f:z:" opt; do
   # echo $opt
   case $opt in
     v) video="$OPTARG"
@@ -40,6 +42,8 @@ while getopts ":hv:rsi:o:w:t:b:f:" opt; do
 	;;
 	f) font="$OPTARG"
 	;;
+    z) rotatestr="rotate=$OPTARG,"
+    ;;
     h) cat help.md
         exit 0
     ;;
@@ -62,7 +66,7 @@ then
 	printf "%s\n" "$bottomtextlen"
 	bottomtextfs=$((240 / ($bottomtextlen / 5 + 1) ))
 	printf "%s\n" $bottomtextfs
-	
+
 	memestr="drawtext=font='$font': \
 		text='$toptext': x=(w-tw)/2: y=(h-text_h)/8: \
 		fontsize=$toptextfs: fontcolor='AntiqueWhite': borderw=4, \
@@ -75,7 +79,6 @@ if [[ $rotate != false ]]
 then
 	rotatestr="rotate=2*PI*t/6,"
 fi
-
 
 if [[ $video != false ]]
 then # if streaming a video
