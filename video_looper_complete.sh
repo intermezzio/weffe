@@ -97,13 +97,15 @@ then # if streaming a video
 		rm $rev "$now.txt"
 
 		video="$now.mp4"
+
+		# stack overflow
+		# ffmpeg -i input.mkv -filter_complex "[0:v]reverse,split=3[r1][r2][r3];[0:v][r1][0:v][r2][0:v][r3] concat=n=6:v=1[v]" -map "[v]" output.mkv
 	fi
 
 	if [[ $watermark != false ]]
 	then # rotate video and stream it
 		# ffmpeg -stream_loop -1 -re -i "$video" -vf "$memestr $rotatestr format=yuv420p[v]" \
 			# -map 0:v -f v4l2 "/dev/video$output"
-		echo "Wassup"
 		ffmpeg -stream_loop -1 -re -i "$video" -i "$watermark" \
 			-filter_complex "[1][0]scale2ref[i][m];[m][i]overlay=format=auto, \
 			$memestr $rotatestr format=yuv420p[v]" \
