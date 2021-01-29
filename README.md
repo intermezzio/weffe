@@ -29,6 +29,10 @@ Adding top and bottom text to a video turns your video camera into a large meme,
 ```sh
 ./video_looper_complete.sh -t "TOP TEXT HERE" -b "BOTTOM TEXT HERE" -f "Impact"
 ```
+_NEW_: If you want to edit the text while running the script, replace the text arguments with filenames. The text in the files can be updated to change the words on the video stream in real time.
+```sh
+./video_looper_complete.sh -t toptext.txt -b bottomtext.txt
+```
 
 ### Image Overlay
 

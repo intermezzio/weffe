@@ -25,11 +25,11 @@ Stream a video to a fake webcam or add effects to your current webcam video stre
 -w filename
     watermark image to overlay on top of a video streami
 
--t text
-    top text for meme-ifying a video stream; must also have bottom text
+-t text or filename
+    top text or filename for meme-ifying a video stream; must also have bottom text
 
--b text
-    bottom text for meme-ifying a video stream; must also have top text
+-b text or filename
+    bottom text or filename for meme-ifying a video stream; must also have top text
 
 -f text (default 'Arial')
     font for meme-ified text
