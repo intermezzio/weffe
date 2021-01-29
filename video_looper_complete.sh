@@ -52,7 +52,28 @@ while getopts ":hv:rsi:o:w:t:b:f:z:" opt; do
   esac
 done
 
-if [[ $toptext != false ]] && [[ $bottomtext != false ]]
+if [[ -f $toptext ]] && [[ -f $bottomtext ]]
+then
+	topplaintext=$(more $toptext | tr '[:lower:]' '[:upper:]')
+	printf "%s\n" "$topplaintext"
+	toptextlen=$(expr length "$toptext")
+	printf "%s\n" "$toptextlen"
+	toptextfs=$((240 / ($toptextlen / 5 + 1) ))
+	printf "%s\n" $toptextfs
+
+	bottomplaintext=$(more $bottomtext | tr '[:lower:]' '[:upper:]')
+	bottomtextlen=$(expr length "$bottomplaintext")
+	printf "%s\n" "$bottomplaintextlen"
+	bottomtextfs=$((240 / ($bottomtextlen / 5 + 1) ))
+	printf "%s\n" $bottomtextfs
+
+	memestr="drawtext=font='$font': \
+		textfile='$toptext': x=(w-tw)/2: y=(h-text_h)/8: reload=1: \
+		fontsize=$toptextfs: fontcolor='AntiqueWhite': borderw=4, \
+		drawtext=font='$font': \
+		textfile='$bottomtext':x=(w-tw)/2:y=7*(h-text_h)/8: reload=1: \
+		fontsize=$bottomtextfs: fontcolor='AntiqueWhite': borderw=4, "
+elif [[ $toptext != false ]] && [[ $bottomtext != false ]]
 then
 	toptext=$(echo $toptext | tr '[:lower:]' '[:upper:]')
 	printf "%s\n" "$toptext"
