@@ -1,1 +1,0 @@
-ffmpeg -i /dev/video0 -i "$1" -filter_complex "[1][0]scale2ref[i][m];[m][i]overlay=format=auto,rotate=2*PI*t/6,format=yuv420p[v]" -map "[v]" -f v4l2 /dev/video2
