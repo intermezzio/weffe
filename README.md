@@ -6,8 +6,14 @@ This series of scripts can stream a video or add photo effects to your webcam. T
 
 This shell script uses ffmpeg and v4l2loopback-dkms for video manipulation, which is available on Windows, MacOS, and Linux.
 However, the script to stream to a webcam only works on Linux.
+
+Debian:
 ```sh
 sudo apt-get install v4l2loopback-dkms
+```
+Arch:
+```sh
+sudo pacman -S v4l2loopback-dkms
 ```
 
 ## Setup
