@@ -44,7 +44,7 @@ _NEW_: If you want to edit the text while running the script, replace the text a
 
 Add an image over your screen - like a picture frame, company logo, or anything that you want using the `-w` flag (watermark). This should have transparency so that your video can still be seen behind it.
 ```sh
-./video_looper_complete.sh -w company_logo.png
+./video_looper_complete.sh -w static/ink_black_frame.png
 ```
 
 ### Rotation
