@@ -105,34 +105,40 @@ if [[ $video != false ]]
 then # if streaming a video
 	if [[ $process = true ]]
 	then # process the video input
-		norm="$video"
-		rev="rev-$video"
-		now="$(date)"
+        ffmpeg -y -i "$video" -filter_complex "[0]split=2[fr][rv]; \
+            [rv]reverse[rv];[fr][rv]concat=n=2:v=1:a=0,format=yuv420p[v]" \
+            -map "[v]" -g 30 stream.mp4
+    else
+        \cp -r "$video" stream.mp4
+    fi
 
-		ffmpeg -i $norm -vf reverse $rev
-
-		printf "file '%s'\nfile '%s'" "$norm" "$rev" > "$now.txt"
-
-		ffmpeg -f concat -i "$now.txt" -c copy "$now.mp4"
-
-		rm $rev "$now.txt"
-
-		video="$now.mp4"
+		# norm="$video"
+		# rev="rev-$video"
+		# now="$(date)"
+    #
+		# ffmpeg -i $norm -vf reverse $rev
+    #
+		# printf "file '%s'\nfile '%s'" "$norm" "$rev" > "$now.txt"
+    #
+		# ffmpeg -f concat -i "$now.txt" -c copy "$now.mp4"
+    #
+		# rm $rev "$now.txt"
+    #
+		# video="$now.mp4"
 
 		# stack overflow
 		# ffmpeg -i input.mkv -filter_complex "[0:v]reverse,split=3[r1][r2][r3];[0:v][r1][0:v][r2][0:v][r3] concat=n=6:v=1[v]" -map "[v]" output.mkv
-	fi
 
 	if [[ $watermark != false ]]
 	then # rotate video and stream it
 		# ffmpeg -stream_loop -1 -re -i "$video" -vf "$memestr $rotatestr format=yuv420p[v]" \
 			# -map 0:v -f v4l2 "/dev/video$output"
-		ffmpeg -stream_loop -1 -re -i "$video" -i "$watermark" \
+		ffmpeg -stream_loop -1 -re -i stream.mp4 -i "$watermark" \
 			-filter_complex "[1][0]scale2ref[i][m];[m][i]overlay=format=auto, \
 			$memestr $rotatestr format=yuv420p[v]" \
 			-map "[v]" -f v4l2 "/dev/video$output"
 	else
-		ffmpeg -stream_loop -1 -re -i "$video" -vf "$memestr $rotatestr format=yuv420p[v]" \
+		ffmpeg -stream_loop -1 -re -i stream.mp4 -vf "$memestr $rotatestr format=yuv420p[v]" \
 			-map 0:v -f v4l2 "/dev/video$output"
 	fi
 else # if streaming from a webcam
