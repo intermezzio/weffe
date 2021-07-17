@@ -29,6 +29,17 @@ Since this command needs to be run every time you restart your computer, it has 
 
 ## Usage
 
+Calling the script `video_looper_complete.sh` without arguments streams to a webcam with no effects. Insert one or more command line arguments to add effects to the video. These effects can all be used together unless otherwise specified.
+
+### Blur
+
+There are multiple ways to blur the video input, namely `box`, `box-strong`, `doublebox`, and `doublebox-strong`. The box options have one bounding box for blurring the video, while the doublebox options have two to make a "fade out" into the blurred background. The strong options have stronger blurs than the normal blur options. To add a blur, use the `-B` flag as shown below:
+```sh
+./video_looper_complete.sh -B doublebox
+
+```
+_NOTE_: As of right now, blur CANNOT be used with the watermark feature below. This may change in future versions.
+
 ### Meme-ifying a Video
 
 Adding top and bottom text to a video turns your video camera into a large meme, adding white text (with a black border) to the inputted media. Additionally, the `-f` flag allows you to select a font (default Arial, although Impact looks better if you've installed it).
