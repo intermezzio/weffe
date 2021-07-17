@@ -19,8 +19,11 @@ font="Arial"
 memestr=""
 rotate=false
 rotatestr=""
+blur=false
+blurtype=""
+blurstr=""
 
-while getopts ":hv:rsi:o:w:t:b:f:z:" opt; do
+while getopts ":hv:rsi:o:w:t:b:f:z:B:" opt; do
   # echo $opt
   case $opt in
     v) video="$OPTARG"
@@ -47,10 +50,47 @@ while getopts ":hv:rsi:o:w:t:b:f:z:" opt; do
     h) cat help.md
         exit 0
     ;;
+    B) blur=true
+		blurtype=$OPTARG
+	;;
     \?) echo "Invalid option -$OPTARG" >&2
+		exit 0
     ;;
   esac
 done
+
+if [ $blur = true ]
+then
+	echo "yuppers"
+
+	case $blurtype in 
+		box)
+			blurstr="[0:v]boxblur=3[bg];[0:v] \
+				crop=iw*2/3:ih*2/3:iw/6:ih/6[fg];[bg][fg]overlay=w/4:h/4,"
+			#   crop=iw*2/3:ih/2:iw/3:ih/2[fg];[bg][fg]overlay=w/3:h/2,"
+		;;
+		box-strong)
+			blurstr="[0:v]boxblur=10[bg];[0:v] \
+				crop=iw*2/3:ih*2/3:iw/6:ih/6[fg];[bg][fg]overlay=w/4:h/4,"
+			#   crop=iw*2/3:ih/2:iw/3:ih/2[fg];[bg][fg]overlay=w/3:h/2,"
+		;;
+		doublebox)
+			blurstr="[0:v]boxblur=3[bg1]; \
+				[0:v]crop=iw*2/3:ih*2/3:iw/6:ih/6,boxblur=1[bg2];[0:v] \
+				crop=iw/2:ih/2:iw/4:ih/4[fg];[bg1] \
+				[bg2]overlay=w/4:h/4[bg];[bg][fg]overlay=w/2:h/2,"
+		;;
+		doublebox-strong)
+			blurstr="[0:v]boxblur=10[bg1]; \
+				[0:v]crop=iw*2/3:ih*2/3:iw/6:ih/6,boxblur=5[bg2];[0:v] \
+				crop=iw/2:ih/2:iw/4:ih/4[fg];[bg1] \
+				[bg2]overlay=w/4:h/4[bg];[bg][fg]overlay=w/2:h/2,"
+		;;
+		*) echo "Invalid blur type \"$blurtype\"" >&2
+			exit 0
+		;;
+	esac
+fi
 
 if [[ -f $toptext ]] && [[ -f $bottomtext ]]
 then
@@ -138,20 +178,23 @@ then # if streaming a video
 			$memestr $rotatestr format=yuv420p[v]" \
 			-map "[v]" -f v4l2 "/dev/video$output"
 	else
-		ffmpeg -stream_loop -1 -re -i stream.mp4 -vf "$memestr $rotatestr format=yuv420p[v]" \
-			-map 0:v -f v4l2 "/dev/video$output"
+		echo "wowowowowowow"
+		ffmpeg -stream_loop -1 -re -i stream.mp4 \
+			-filter_complex "$blurstr $memestr $rotatestr format=yuv420p[v]" \
+			-map "[v]" -f v4l2 "/dev/video$output"
 	fi
 else # if streaming from a webcam
 	if [[ $watermark != false ]]
 	then
 		ffmpeg -i "/dev/video$input" -i "$watermark" \
 			-filter_complex "[1][0]scale2ref[i][m];[m][i]overlay=format=auto, \
-			$memestr $rotatestr format=yuv420p[v]" \
+			format=yuv420p[v] \
+			$memestr $rotatestr " \
 			-map "[v]" -f v4l2 "/dev/video$output"
 	else
 		ffmpeg -i "/dev/video$input" \
-			-vf "$memestr $rotatestr format=yuv420p[v]" \
-			-map 0:v -f v4l2 "/dev/video$output"
+			-filter_complex "$blurstr $memestr $rotatestr format=yuv420p[v]" \
+			-map "[v]" -f v4l2 "/dev/video$output"
 
 	fi
 fi
