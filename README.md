@@ -33,9 +33,9 @@ Calling the script `video_looper_complete.sh` without arguments streams to a web
 
 ### Blur
 
-There are multiple ways to blur the video input, namely `box`, `box-strong`, `doublebox`, and `doublebox-strong`. The box options have one bounding box for blurring the video, while the doublebox options have two to make a "fade out" into the blurred background. The strong options have stronger blurs than the normal blur options. To add a blur, use the `-B` flag as shown below:
+There are multiple ways to blur the video input, namely `vignette`, `vignette-strong`, `box`, `box-strong`, `doublebox`, and `doublebox-strong`. The vignette option is not blurred in the center but blurs as approaching the sides. The box options have one bounding box for blurring the video, while the doublebox options have two to make a "fade out" into the blurred background. The strong options have stronger blurs than the normal blur options. To add a blur, use the `-B` flag as shown below:
 ```sh
-./video_looper_complete.sh -B doublebox
+./video_looper_complete.sh -B vignette
 
 ```
 _NOTE_: As of right now, blur CANNOT be used with the watermark feature below. This may change in future versions.
