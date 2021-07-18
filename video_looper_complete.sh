@@ -86,6 +86,20 @@ then
 				crop=iw/2:ih/2:iw/4:ih/4[fg];[bg1] \
 				[bg2]overlay=w/4:h/4[bg];[bg][fg]overlay=w/2:h/2,"
 		;;
+		vignette)
+			# blurstr="[0:v]convolution='1 1 1 1 1 1 1 1 1:1 1 1 1 1 1 1 1 1:1 1 1 1 1 1 1 1 1:1 1 1 1 1 1 1 1 1:1/9:1/9:1/9:1/9',"
+			blurstr="[0:v]split=2[v2][v];[0:v]boxblur=10[bg]; \
+				[v2]drawbox=0:0:iw:ih:color=white:t=fill, \
+				vignette='PI/4+w/3+h/3':aspect=2/3[mask]; \
+				[bg][v][mask]maskedmerge,"
+			# blurstr="drawbox=0:0:iw:ih:color=white:t=fill,vignette='PI/4+w/3+h/3':aspect=2/3,"
+		;;
+		vignette-strong)
+			blurstr="[0:v]split=2[v2][v];[0:v]boxblur=20[bg]; \
+				[v2]drawbox=0:0:iw:ih:color=white:t=fill, \
+				vignette='PI/4+w/3+h/3':aspect=2/3[mask]; \
+				[bg][v][mask]maskedmerge,"
+		;;
 		*) echo "Invalid blur type \"$blurtype\"" >&2
 			exit 0
 		;;
