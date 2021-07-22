@@ -66,39 +66,39 @@ then
 	case $blurtype in 
 		box)
 			blurstr="[0:v]boxblur=3[bg];[0:v] \
-				crop=iw*2/3:ih*2/3:iw/6:ih/6[fg];[bg][fg]overlay=w/4:h/4,"
+				crop=iw*2/3:ih*2/3:iw/6:ih/6[fg];[bg][fg]overlay=w/4:h/4[0];"
 			#   crop=iw*2/3:ih/2:iw/3:ih/2[fg];[bg][fg]overlay=w/3:h/2,"
 		;;
 		box-strong)
 			blurstr="[0:v]boxblur=10[bg];[0:v] \
-				crop=iw*2/3:ih*2/3:iw/6:ih/6[fg];[bg][fg]overlay=w/4:h/4,"
+				crop=iw*2/3:ih*2/3:iw/6:ih/6[fg];[bg][fg]overlay=w/4:h/4[0];"
 			#   crop=iw*2/3:ih/2:iw/3:ih/2[fg];[bg][fg]overlay=w/3:h/2,"
 		;;
 		doublebox)
 			blurstr="[0:v]boxblur=3[bg1]; \
 				[0:v]crop=iw*2/3:ih*2/3:iw/6:ih/6,boxblur=1[bg2];[0:v] \
 				crop=iw/2:ih/2:iw/4:ih/4[fg];[bg1] \
-				[bg2]overlay=w/4:h/4[bg];[bg][fg]overlay=w/2:h/2,"
+				[bg2]overlay=w/4:h/4[bg];[bg][fg]overlay=w/2:h/2[0];"
 		;;
 		doublebox-strong)
 			blurstr="[0:v]boxblur=10[bg1]; \
 				[0:v]crop=iw*2/3:ih*2/3:iw/6:ih/6,boxblur=5[bg2];[0:v] \
 				crop=iw/2:ih/2:iw/4:ih/4[fg];[bg1] \
-				[bg2]overlay=w/4:h/4[bg];[bg][fg]overlay=w/2:h/2,"
+				[bg2]overlay=w/4:h/4[bg];[bg][fg]overlay=w/2:h/2[0];"
 		;;
 		vignette)
 			# blurstr="[0:v]convolution='1 1 1 1 1 1 1 1 1:1 1 1 1 1 1 1 1 1:1 1 1 1 1 1 1 1 1:1 1 1 1 1 1 1 1 1:1/9:1/9:1/9:1/9',"
 			blurstr="[0:v]split=2[v2][v];[0:v]boxblur=10[bg]; \
 				[v2]drawbox=0:0:iw:ih:color=white:t=fill, \
 				vignette='PI/4+w/3+h/3':aspect=2/3[mask]; \
-				[bg][v][mask]maskedmerge,"
+				[bg][v][mask]maskedmerge[0];"
 			# blurstr="drawbox=0:0:iw:ih:color=white:t=fill,vignette='PI/4+w/3+h/3':aspect=2/3,"
 		;;
 		vignette-strong)
 			blurstr="[0:v]split=2[v2][v];[0:v]boxblur=20[bg]; \
 				[v2]drawbox=0:0:iw:ih:color=white:t=fill, \
 				vignette='PI/4+w/3+h/3':aspect=2/3[mask]; \
-				[bg][v][mask]maskedmerge,"
+				[bg][v][mask]maskedmerge[0];"
 		;;
 		*) echo "Invalid blur type \"$blurtype\"" >&2
 			exit 0
@@ -188,26 +188,26 @@ then # if streaming a video
 		# ffmpeg -stream_loop -1 -re -i "$video" -vf "$memestr $rotatestr format=yuv420p[v]" \
 			# -map 0:v -f v4l2 "/dev/video$output"
 		ffmpeg -stream_loop -1 -re -i stream.mp4 -i "$watermark" \
-			-filter_complex "[1][0]scale2ref[i][m];[m][i]overlay=format=auto, \
+			-filter_complex "$blurstr [1][0]scale2ref[i][m];[m][i]overlay=format=auto, \
 			$memestr $rotatestr format=yuv420p[v]" \
 			-map "[v]" -f v4l2 "/dev/video$output"
 	else
 		echo "wowowowowowow"
 		ffmpeg -stream_loop -1 -re -i stream.mp4 \
-			-filter_complex "$blurstr $memestr $rotatestr format=yuv420p[v]" \
+			-filter_complex "$blurstr [0] $memestr $rotatestr format=yuv420p[v]" \
 			-map "[v]" -f v4l2 "/dev/video$output"
 	fi
 else # if streaming from a webcam
 	if [[ $watermark != false ]]
 	then
 		ffmpeg -i "/dev/video$input" -i "$watermark" \
-			-filter_complex "[1][0]scale2ref[i][m];[m][i]overlay=format=auto, \
+			-filter_complex "$blurstr [1][0]scale2ref[i][m];[m][i]overlay=format=auto, \
 			format=yuv420p[v] \
 			$memestr $rotatestr " \
 			-map "[v]" -f v4l2 "/dev/video$output"
 	else
 		ffmpeg -i "/dev/video$input" \
-			-filter_complex "$blurstr $memestr $rotatestr format=yuv420p[v]" \
+			-filter_complex "$blurstr [0] $memestr $rotatestr format=yuv420p[v]" \
 			-map "[v]" -f v4l2 "/dev/video$output"
 
 	fi

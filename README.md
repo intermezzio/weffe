@@ -38,7 +38,6 @@ There are multiple ways to blur the video input, namely `vignette`, `vignette-st
 ./video_looper_complete.sh -B vignette
 
 ```
-_NOTE_: As of right now, blur CANNOT be used with the watermark feature below. This may change in future versions.
 
 ### Meme-ifying a Video
 

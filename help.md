@@ -36,7 +36,6 @@ Stream a video to a fake webcam or add effects to your current webcam video stre
 
 -B pattern
     blur pattern: choose from box, box-strong, doublebox, and doublebox-strong
-    cannot be used with -w
 
 -z pattern
     rotation as a function of time; not to be used with -r
