@@ -20,12 +20,13 @@ sudo pacman -S v4l2loopback-dkms
 
 To create a blank virtual webcam (that this script can stream to), run the following command:
 ```sh
-sudo modprobe v4l2loopback video_nr=2
+sudo modprobe v4l2loopback exlusive_caps=1 video_nr=2 card_label="Webcam Video Effects"
 ```
 Since this command needs to be run every time you restart your computer, it has been aliased with the script below:
 ```sh
 ./turn_webcam_on.sh
 ```
+_NOTE_: If you ran this command after starting an application like Zoom, you will have to restart Zoom to see the new webcam.
 
 ## Usage
 
