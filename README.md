@@ -16,6 +16,8 @@ Arch:
 sudo pacman -S v4l2loopback-dkms
 ```
 
+Ensure that v4l2loopback-dkms is at version 0.12.5-1 or later to ensure full functionality.
+
 ## Setup
 
 To create a blank virtual webcam (that this script can stream to), run the following command:
