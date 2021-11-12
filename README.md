@@ -2,6 +2,10 @@
 
 This series of scripts can stream a video or add photo effects to your webcam. This then sends that edited video stream to a new webcam, specifically `/dev/video2`. After the script runs, you can select the extra webcam as your video source on a zoom call, webex call, or any video call.
 
+Before | After
+:-----:|:------:
+![Before](demo/no_effect.png) | ![After](demo/)
+
 ## Requirements
 
 This shell script uses ffmpeg and v4l2loopback-dkms for video manipulation, which is available on Windows, MacOS, and Linux.
