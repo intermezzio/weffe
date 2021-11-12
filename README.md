@@ -4,7 +4,7 @@ This series of scripts can stream a video or add photo effects to your webcam. T
 
 Before | After
 :-----:|:------:
-![Before](demo/no_effect.png) | ![After](demo/)
+![Before](demo/no_effect.png) | ![After](demo/example_1.png)
 
 ## Requirements
 
