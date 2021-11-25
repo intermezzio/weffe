@@ -7,6 +7,7 @@
 # -t top text (meme)
 # -b bottom text (meme)
 # -f font (meme)
+# -B blur (format)
 
 video=false
 process=true
@@ -22,6 +23,8 @@ rotatestr=""
 blur=false
 blurtype=""
 blurstr=""
+nextinput=1
+inputstr=""
 
 while getopts ":hv:rsi:o:w:t:b:f:z:B:" opt; do
   # echo $opt
@@ -61,44 +64,87 @@ done
 
 if [ $blur = true ]
 then
-	echo "yuppers"
+	strongblur1="luma_radius=min(w\,h)/5:chroma_radius=min(min(cw\,ch)\,120):luma_power=1"
+	strongblur2="luma_radius=min(w\,h)/15:chroma_radius=min(min(cw\,ch)\,120)/2:luma_power=1"
+	weakblur1=$strongblur2
+	weakblur2="luma_radius=min(w\,h)/25:chroma_radius=min(min(cw\,ch)\,120)/4:luma_power=1"
 
 	case $blurtype in 
 		box)
-			blurstr="[0:v]boxblur=3[bg];[0:v] \
+			blurstr="[0:v]boxblur=${weakblur1}[bg];[0:v] \
 				crop=iw*2/3:ih*2/3:iw/6:ih/6[fg];[bg][fg]overlay=w/4:h/4[0];"
 			#   crop=iw*2/3:ih/2:iw/3:ih/2[fg];[bg][fg]overlay=w/3:h/2,"
 		;;
 		box-strong)
-			blurstr="[0:v]boxblur=10[bg];[0:v] \
+			blurstr="[0:v]boxblur=${strongblur1}[bg];[0:v] \
 				crop=iw*2/3:ih*2/3:iw/6:ih/6[fg];[bg][fg]overlay=w/4:h/4[0];"
 			#   crop=iw*2/3:ih/2:iw/3:ih/2[fg];[bg][fg]overlay=w/3:h/2,"
 		;;
 		doublebox)
-			blurstr="[0:v]boxblur=3[bg1]; \
-				[0:v]crop=iw*2/3:ih*2/3:iw/6:ih/6,boxblur=1[bg2];[0:v] \
+			blurstr="[0:v]boxblur=${weakblur1}[bg1]; \
+				[0:v]crop=iw*2/3:ih*2/3:iw/6:ih/6,boxblur=${weakblur2}[bg2];[0:v] \
 				crop=iw/2:ih/2:iw/4:ih/4[fg];[bg1] \
 				[bg2]overlay=w/4:h/4[bg];[bg][fg]overlay=w/2:h/2[0];"
 		;;
 		doublebox-strong)
-			blurstr="[0:v]boxblur=10[bg1]; \
-				[0:v]crop=iw*2/3:ih*2/3:iw/6:ih/6,boxblur=5[bg2];[0:v] \
+			blurstr="[0:v]boxblur=${strongblur1}[bg1]; \
+				[0:v]crop=iw*2/3:ih*2/3:iw/6:ih/6,boxblur=${strongblur2}[bg2];[0:v] \
 				crop=iw/2:ih/2:iw/4:ih/4[fg];[bg1] \
 				[bg2]overlay=w/4:h/4[bg];[bg][fg]overlay=w/2:h/2[0];"
 		;;
-		vignette)
-			# blurstr="[0:v]convolution='1 1 1 1 1 1 1 1 1:1 1 1 1 1 1 1 1 1:1 1 1 1 1 1 1 1 1:1 1 1 1 1 1 1 1 1:1/9:1/9:1/9:1/9',"
-			blurstr="[0:v]split=2[v2][v];[0:v]boxblur=10[bg]; \
-				[v2]drawbox=0:0:iw:ih:color=white:t=fill, \
-				vignette='PI/4+w/3+h/3':aspect=2/3[mask]; \
-				[bg][v][mask]maskedmerge[0];"
-			# blurstr="drawbox=0:0:iw:ih:color=white:t=fill,vignette='PI/4+w/3+h/3':aspect=2/3,"
+		ellipse-small)
+			# adapted from https://stackoverflow.com/a/45119116/12940893
+			blurstr="[0:v]split=3[v3][v2][v];[v2]boxblur=${weakblur1}[bg]; \
+			[$nextinput]alphaextract[circ];[circ][v3]scale2ref[i][m]; \
+			[m][i]overlay=format=auto,format=yuv420p[mask]; \
+			[v][mask]alphamerge[fg];[bg][fg]overlay[0];"
+			nextinput=$((nextinput+1))
+			inputstr="${inputstr} -i static/small_faded_background.png"
 		;;
-		vignette-strong)
-			blurstr="[0:v]split=2[v2][v];[0:v]boxblur=20[bg]; \
-				[v2]drawbox=0:0:iw:ih:color=white:t=fill, \
-				vignette='PI/4+w/3+h/3':aspect=2/3[mask]; \
-				[bg][v][mask]maskedmerge[0];"
+		ellipse-small-strong)
+			# adapted from https://stackoverflow.com/a/45119116/12940893
+			blurstr="[0:v]split=3[v3][v2][v];[v2]boxblur=${strongblur1}[bg]; \
+			[$nextinput]alphaextract[circ];[circ][v3]scale2ref[i][m]; \
+			[m][i]overlay=format=auto,format=yuv420p[mask]; \
+			[v][mask]alphamerge[fg];[bg][fg]overlay[0];"
+			nextinput=$((nextinput+1))
+			inputstr="${inputstr} -i static/small_faded_background.png"
+		;;
+		ellipse-medium)
+			# adapted from https://stackoverflow.com/a/45119116/12940893
+			blurstr="[0:v]split=3[v3][v2][v];[v2]boxblur=${weakblur1}[bg]; \
+			[$nextinput]alphaextract[circ];[circ][v3]scale2ref[i][m]; \
+			[m][i]overlay=format=auto,format=yuv420p[mask]; \
+			[v][mask]alphamerge[fg];[bg][fg]overlay[0];"
+			nextinput=$((nextinput+1))
+			inputstr="${inputstr} -i static/medium_faded_background.png"
+		;;
+		ellipse-medium-strong)
+			# adapted from https://stackoverflow.com/a/45119116/12940893
+			blurstr="[0:v]split=3[v3][v2][v];[v2]boxblur=${strongblur1}[bg]; \
+			[$nextinput]alphaextract[circ];[circ][v3]scale2ref[i][m]; \
+			[m][i]overlay=format=auto,format=yuv420p[mask]; \
+			[v][mask]alphamerge[fg];[bg][fg]overlay[0];"
+			nextinput=$((nextinput+1))
+			inputstr="${inputstr} -i static/medium_faded_background.png"
+		;;
+		ellipse-large)
+			# adapted from https://stackoverflow.com/a/45119116/12940893
+			blurstr="[0:v]split=3[v3][v2][v];[v2]boxblur=${weakblur1}[bg]; \
+			[$nextinput]alphaextract[circ];[circ][v3]scale2ref[i][m]; \
+			[m][i]overlay=format=auto,format=yuv420p[mask]; \
+			[v][mask]alphamerge[fg];[bg][fg]overlay[0];"
+			nextinput=$((nextinput+1))
+			inputstr="${inputstr} -i static/large_faded_background.png"
+		;;
+		ellipse-large-strong)
+			# adapted from https://stackoverflow.com/a/45119116/12940893
+			blurstr="[0:v]split=3[v3][v2][v];[v2]boxblur=${strongblur1}[bg]; \
+			[$nextinput]alphaextract[circ];[circ][v3]scale2ref[i][m]; \
+			[m][i]overlay=format=auto,format=yuv420p[mask]; \
+			[v][mask]alphamerge[fg];[bg][fg]overlay[0];"
+			nextinput=$((nextinput+1))
+			inputstr="${inputstr} -i static/large_faded_background.png"
 		;;
 		*) echo "Invalid blur type \"$blurtype\"" >&2
 			exit 0
@@ -121,12 +167,12 @@ then
 	bottomtextfs=$((240 / ($bottomtextlen / 5 + 1) ))
 	printf "%s\n" $bottomtextfs
 
-	memestr="drawtext=font='$font': \
+	memestr="[0:v]drawtext=font='$font': \
 		textfile='$toptext': x=(w-tw)/2: y=(h-text_h)/8: reload=1: \
 		fontsize=$toptextfs: fontcolor='AntiqueWhite': borderw=4, \
 		drawtext=font='$font': \
 		textfile='$bottomtext':x=(w-tw)/2:y=7*(h-text_h)/8: reload=1: \
-		fontsize=$bottomtextfs: fontcolor='AntiqueWhite': borderw=4, "
+		fontsize=$bottomtextfs: fontcolor='AntiqueWhite': borderw=4[0];"
 elif [[ $toptext != false ]] && [[ $bottomtext != false ]]
 then
 	toptext=$(echo $toptext | tr '[:lower:]' '[:upper:]')
@@ -142,12 +188,12 @@ then
 	bottomtextfs=$((240 / ($bottomtextlen / 5 + 1) ))
 	printf "%s\n" $bottomtextfs
 
-	memestr="drawtext=font='$font': \
+	memestr="[0:v]drawtext=font='$font': \
 		text='$toptext': x=(w-tw)/2: y=(h-text_h)/8: \
 		fontsize=$toptextfs: fontcolor='AntiqueWhite': borderw=4, \
 		drawtext=font='$font': \
 		text='$bottomtext':x=(w-tw)/2:y=7*(h-text_h)/8: \
-		fontsize=$bottomtextfs: fontcolor='AntiqueWhite': borderw=4, "
+		fontsize=$bottomtextfs: fontcolor='AntiqueWhite': borderw=4[0];"
 fi
 
 if [[ $rotate != false ]]
@@ -192,8 +238,7 @@ then # if streaming a video
 			$memestr $rotatestr format=yuv420p[v]" \
 			-map "[v]" -f v4l2 "/dev/video$output"
 	else
-		echo "wowowowowowow"
-		ffmpeg -stream_loop -1 -re -i stream.mp4 \
+		ffmpeg -stream_loop -1 -re -i stream.mp4 $inputstr \
 			-filter_complex "$blurstr [0] $memestr $rotatestr format=yuv420p[v]" \
 			-map "[v]" -f v4l2 "/dev/video$output"
 	fi
@@ -201,12 +246,12 @@ else # if streaming from a webcam
 	if [[ $watermark != false ]]
 	then
 		ffmpeg -i "/dev/video$input" -i "$watermark" \
-			-filter_complex "$blurstr [1][0]scale2ref[i][m];[m][i]overlay=format=auto, \
-			format=yuv420p[v] \
-			$memestr $rotatestr " \
+			-filter_complex "$blurstr [1][0]scale2ref[i][m];[m][i]overlay=format=auto[v];
+			$memestr $rotatestr format=yuv420p [v]" \
 			-map "[v]" -f v4l2 "/dev/video$output"
 	else
-		ffmpeg -i "/dev/video$input" \
+		echo "here"
+		ffmpeg -i "/dev/video$input" $inputstr \
 			-filter_complex "$blurstr [0] $memestr $rotatestr format=yuv420p[v]" \
 			-map "[v]" -f v4l2 "/dev/video$output"
 
