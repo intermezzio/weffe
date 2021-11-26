@@ -27,8 +27,9 @@ nextinput=1
 inputstr=""
 filterstr=""
 printffmpeg=false
+strongblur=false
 
-while getopts ":hv:rsi:o:w:t:b:f:z:B:p" opt; do
+while getopts ":hv:rsi:o:w:t:b:f:z:B:Sp" opt; do
   case $opt in
     v) video="$OPTARG"
     ;;
@@ -55,6 +56,8 @@ while getopts ":hv:rsi:o:w:t:b:f:z:B:p" opt; do
     ;;
     B) blur=true
 		blurtype=$OPTARG
+	;;
+	S) strongblur=true
 	;;
 	p) printffmpeg=true
 	;;
@@ -86,58 +89,44 @@ then
 	weakblur1=$strongblur2
 	weakblur2="luma_radius=min(w\,h)/25:chroma_radius=min(min(cw\,ch)\,120)/4:luma_power=1"
 
-	case $blurtype in
-		*-strong)
-			blur1=$strongblur1
-			blur2=$strongblur2
-		;;
-		*)
-			blur1=$weakblur1
-			blur2=$weakblur2
-		;;
-	esac
+	if [[ $strongblur = true ]]
+	then
+		blur1=$strongblur1
+		blur2=$strongblur2
+	else
+		blur1=$weakblur1
+		blur2=$weakblur2
+	fi
 
 	case $blurtype in 
-		box|box-strong)
-			blurstr="[v]split=2[v2][v];[v2]boxblur=${blur1}[bg];[v] \
-				crop=iw*2/3:ih*2/3:iw/6:ih/6[fg];[bg][fg]overlay=w/4:h/4[v];"
+		square)
+			blurimg="static/blur_square.png"
 		;;
-		doublebox|doublebox-strong)
-			blurstr="[v]split=3[v3][v2][v];[v3]boxblur=${blur1}[bg1]; \
-				[v2]crop=iw*2/3:ih*2/3:iw/6:ih/6,boxblur=${blur2}[bg2];[v] \
-				crop=iw/2:ih/2:iw/4:ih/4[fg];[bg1] \
-				[bg2]overlay=w/4:h/4[bg];[bg][fg]overlay=w/2:h/2[v];"
+		rect)
+			blurimg="static/blur_rect.png"
 		;;
-		portrait|portrait-strong)
-			# adapted from https://stackoverflow.com/a/45119116/12940893
-			blurstr="[v]split=3[v3][v2][v];[v2]boxblur=${blur1}[bg]; \
-				[$nextinput]alphaextract[circ];[circ][v3]scale2ref[i][m]; \
-				[m][i]overlay=format=auto,format=yuv420p[mask]; \
-				[v][mask]alphamerge[fg];[bg][fg]overlay[v];"
-			nextinput=$((nextinput+1))
-			inputstr="${inputstr} -i static/small_faded_background.png"
+		portrait)
+			blurimg="static/blur_portrait.png"
 		;;
-		circle|circle-strong)
-			blurstr="[v]split=3[v3][v2][v];[v2]boxblur=${blur1}[bg]; \
-				[$nextinput]alphaextract[circ];[circ][v3]scale2ref[i][m]; \
-				[m][i]overlay=format=auto,format=yuv420p[mask]; \
-				[v][mask]alphamerge[fg];[bg][fg]overlay[v];"
-			nextinput=$((nextinput+1))
-			inputstr="${inputstr} -i static/medium_faded_background.png"
+		circle)
+			blurimg="static/blur_circle.png"
 		;;
-		ellipse|ellipse-strong)
-			# adapted from https://stackoverflow.com/a/45119116/12940893
-			blurstr="[v]split=3[v3][v2][v];[v2]boxblur=${blur1}[bg]; \
-				[$nextinput]alphaextract[circ];[circ][v3]scale2ref[i][m]; \
-				[m][i]overlay=format=auto,format=yuv420p[mask]; \
-				[v][mask]alphamerge[fg];[bg][fg]overlay[v];"
-			nextinput=$((nextinput+1))
-			inputstr="${inputstr} -i static/large_faded_background.png"
+		ellipse)
+			blurimg="static/blur_ellipse.png"
 		;;
 		*) echo "Invalid blur type \"$blurtype\"" >&2
 			exit 0
 		;;
 	esac
+
+	# adapted from https://stackoverflow.com/a/45119116/12940893
+	blurstr="[v]split=3[v3][v2][v];[v2]boxblur=${blur1}[bg]; \
+		[$nextinput]alphaextract[circ];[circ][v3]scale2ref[i][m]; \
+		[m][i]overlay=format=auto,format=yuv420p[mask]; \
+		[v][mask]alphamerge[fg];[bg][fg]overlay[v];"
+	nextinput=$((nextinput+1))
+	inputstr="${inputstr} -i $blurimg"
+
 	filterstr="${filterstr}${blurstr}"
 fi
 
