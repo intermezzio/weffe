@@ -28,6 +28,7 @@ inputstr=""
 filterstr=""
 printffmpeg=false
 strongblur=false
+rotatefactor="2*PI*t/6"
 
 while getopts ":hv:rsi:o:w:t:b:f:z:B:Sp" opt; do
   case $opt in
@@ -49,7 +50,8 @@ while getopts ":hv:rsi:o:w:t:b:f:z:B:Sp" opt; do
 	;;
 	f) font="$OPTARG"
 	;;
-    z) rotatestr="rotate=$OPTARG,"
+    z) rotate=true
+		rotatefactor="$OPTARG"
     ;;
     h) cat help.md
         exit 0
@@ -82,6 +84,7 @@ else # if streaming from a webcam
 	inputstr="-i /dev/video$input"
 fi
 
+# process blur background
 if [ $blur = true ]
 then
 	strongblur1="luma_radius=min(w\,h)/5:chroma_radius=min(min(cw\,ch)\,120):luma_power=1"
@@ -130,6 +133,7 @@ then
 	filterstr="${filterstr}${blurstr}"
 fi
 
+# process watermark
 if [[ $watermark != false ]]
 then
 	waterstr="[$nextinput][v]scale2ref[i][m];[m][i]overlay=format=auto[v];"
@@ -138,10 +142,19 @@ then
 	filterstr="${filterstr}${waterstr}"
 fi
 
-if [[ -f $toptext ]] && [[ -f $bottomtext ]]
+# process text
+if [[ $toptext != false ]] && [[ $bottomtext != false ]]
 then
+	if ! [[ -f $toptext ]] || ! [[ -f $bottomtext ]]
+	then
+		echo "$toptext" | tr '[:lower:]' '[:upper:]' > "top.txt"
+		echo "$bottomtext" | tr '[:lower:]' '[:upper:]' > "bottom.txt"
+		toptext="top.txt"
+		bottomtext="bottom.txt"
+	fi
+
 	topplaintext=$(more $toptext | tr '[:lower:]' '[:upper:]')
-	toptextlen=$(expr length "$toptext")
+	toptextlen=$(expr length "$topplaintext")
 	toptextfs=$((240 / ($toptextlen / 5 + 1) ))
 	
 	bottomplaintext=$(more $bottomtext | tr '[:lower:]' '[:upper:]')
@@ -149,36 +162,19 @@ then
 	bottomtextfs=$((240 / ($bottomtextlen / 5 + 1) ))
 	
 	memestr="[v]drawtext=font='$font': \
-		textfile='$toptext': x=(w-tw)/2: y=(h-text_h)/8: reload=1: \
+		textfile='$toptext': x=(w-tw)/2: y=(h-text_h)/6: reload=1: \
 		fontsize=$toptextfs: fontcolor='AntiqueWhite': borderw=4, \
 		drawtext=font='$font': \
-		textfile='$bottomtext':x=(w-tw)/2:y=7*(h-text_h)/8: reload=1: \
+		textfile='$bottomtext':x=(w-tw)/2:y=5*(h-text_h)/6: reload=1: \
 		fontsize=$bottomtextfs: fontcolor='AntiqueWhite': borderw=4[v];"
 
-	filterstr="${filterstr}${memestr}"
-elif [[ $toptext != false ]] && [[ $bottomtext != false ]]
-then
-	toptext=$(echo $toptext | tr '[:lower:]' '[:upper:]')
-	toptextlen=$(expr length "$toptext")
-	toptextfs=$((240 / ($toptextlen / 5 + 1) ))
-	
-	bottomtext=$(echo $bottomtext | tr '[:lower:]' '[:upper:]')
-	bottomtextlen=$(expr length "$bottomtext")
-	bottomtextfs=$((240 / ($bottomtextlen / 5 + 1) ))
-	
-	memestr="[v]drawtext=font='$font': \
-		text='$toptext': x=(w-tw)/2: y=(h-text_h)/8: \
-		fontsize=$toptextfs: fontcolor='AntiqueWhite': borderw=4, \
-		drawtext=font='$font': \
-		text='$bottomtext':x=(w-tw)/2:y=7*(h-text_h)/8: \
-		fontsize=$bottomtextfs: fontcolor='AntiqueWhite': borderw=4[v];"
-
-	filterstr="${filterstr}${memestr}"
+	filterstr="${filterstr}${memestr}" 
 fi
 
+# process rotate
 if [[ $rotate != false ]]
 then
-	rotatestr="[v]rotate=2*PI*t/6[v];"
+	rotatestr="[v]rotate=${rotatefactor}[v];"
 	filterstr="${filterstr}${rotatestr}"
 fi
 

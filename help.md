@@ -41,7 +41,7 @@ Stream a video to a fake webcam or add effects to your current webcam video stre
     font for meme-ified text
 
 -B pattern
-    blur pattern: choose from box, box-strong, doublebox, and doublebox-strong
+    blur pattern: choose from square, rect, portrait, circle, and ellipse
 
 -z pattern
     rotation as a function of time; not to be used with -r
