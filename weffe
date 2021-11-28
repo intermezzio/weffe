@@ -1,0 +1,211 @@
+#!/usr/bin/env sh
+
+# -v video.mp4
+# -r (rotate)
+# -s skip processing video (must have -v)
+# -i 0 (default video0 input)
+# -o 2 (default video2 output)
+# -w watermark.png
+# -t top text (meme)
+# -b bottom text (meme)
+# -f font (meme)
+# -B blur (format)
+
+video=false
+process=true
+input=0
+output=2
+watermark=false
+toptext=false
+bottomtext=false
+font="Arial"
+memestr=""
+rotate=false
+rotatestr=""
+blur=false
+blurtype=""
+blurstr=""
+nextinput=1
+inputstr=""
+filterstr=""
+printffmpeg=false
+strongblur=false
+rotatefactor="2*PI*t/6"
+activate=false
+
+while getopts ":hv:rsi:o:w:t:b:f:z:B:Spa" opt; do
+  case $opt in
+  	a) activate=true
+	;;
+    v) video="$OPTARG"
+    ;;
+    r) rotate=true
+    ;;
+    s) process=false
+	;;
+	i) input="$OPTARG"
+	;;
+	o) output="$OPTARG"
+	;;
+	w) watermark="$OPTARG"
+    ;;
+    t) toptext="$OPTARG"
+	;;
+	b) bottomtext="$OPTARG"
+	;;
+	f) font="$OPTARG"
+	;;
+    z) rotate=true
+		rotatefactor="$OPTARG"
+    ;;
+    h) cat help.md
+        exit 0
+    ;;
+    B) blur=true
+		blurtype=$OPTARG
+	;;
+	S) strongblur=true
+	;;
+	p) printffmpeg=true
+	;;
+    \?) echo "Invalid option -$OPTARG" >&2
+		exit 0
+    ;;
+  esac
+done
+
+if $activate
+then
+	echo "Initializing virtual camera at /dev/video${output}"
+	echo "This may require sudo access"
+	sudo modprobe v4l2loopback exlusive_caps=1 video_nr=$output card_label="Webcam Video Effects"
+	exit 0
+fi
+
+if [[ $video != false ]]
+then # if streaming a video
+	if [[ $process = true ]]
+	then # process the video input
+        ffmpeg -y -i "$video" -filter_complex "[0]split=2[fr][rv]; \
+            [rv]reverse[rv];[fr][rv]concat=n=2:v=1:a=0,format=yuv420p[v]" \
+            -map "[v]" -g 30 stream.mp4
+    else
+        \cp -r "$video" stream.mp4
+    fi
+    inputstr="-stream_loop -1 -re -i stream.mp4"
+else # if streaming from a webcam
+	inputstr="-i /dev/video$input"
+fi
+
+# process blur background
+if [ $blur = true ]
+then
+	strongblur1="luma_radius=min(w\,h)/5:chroma_radius=min(min(cw\,ch)\,120):luma_power=1"
+	strongblur2="luma_radius=min(w\,h)/15:chroma_radius=min(min(cw\,ch)\,120)/2:luma_power=1"
+	weakblur1=$strongblur2
+	weakblur2="luma_radius=min(w\,h)/25:chroma_radius=min(min(cw\,ch)\,120)/4:luma_power=1"
+
+	if [[ $strongblur = true ]]
+	then
+		blur1=$strongblur1
+		blur2=$strongblur2
+	else
+		blur1=$weakblur1
+		blur2=$weakblur2
+	fi
+
+	case $blurtype in 
+		square)
+			blurimg="static/blur_square.png"
+		;;
+		rect)
+			blurimg="static/blur_rect.png"
+		;;
+		portrait)
+			blurimg="static/blur_portrait.png"
+		;;
+		circle)
+			blurimg="static/blur_circle.png"
+		;;
+		ellipse)
+			blurimg="static/blur_ellipse.png"
+		;;
+		*) echo "Invalid blur type \"$blurtype\"" >&2
+			exit 0
+		;;
+	esac
+
+	# adapted from https://stackoverflow.com/a/45119116/12940893
+	blurstr="[v]split=3[v3][v2][v];[v2]boxblur=${blur1}[bg]; \
+		[$nextinput]alphaextract[circ];[circ][v3]scale2ref[i][m]; \
+		[m][i]overlay=format=auto,format=yuv420p[mask]; \
+		[v][mask]alphamerge[fg];[bg][fg]overlay[v];"
+	nextinput=$((nextinput+1))
+	inputstr="${inputstr} -i $blurimg"
+
+	filterstr="${filterstr}${blurstr}"
+fi
+
+# process watermark
+if [[ $watermark != false ]]
+then
+	waterstr="[$nextinput][v]scale2ref[i][m];[m][i]overlay=format=auto[v];"
+	nextinput=$((nextinput+1))
+	inputstr="${inputstr} -i $watermark"
+	filterstr="${filterstr}${waterstr}"
+fi
+
+# process text
+if [[ $toptext != false ]] && [[ $bottomtext != false ]]
+then
+	if ! [[ -f $toptext ]] || ! [[ -f $bottomtext ]]
+	then
+		echo "$toptext" | tr '[:lower:]' '[:upper:]' > "top.txt"
+		echo "$bottomtext" | tr '[:lower:]' '[:upper:]' > "bottom.txt"
+		toptext="top.txt"
+		bottomtext="bottom.txt"
+	fi
+
+	topplaintext=$(more $toptext | tr '[:lower:]' '[:upper:]')
+	toptextlen=$(expr length "$topplaintext")
+	toptextfs=$((240 / ($toptextlen / 5 + 1) ))
+	
+	bottomplaintext=$(more $bottomtext | tr '[:lower:]' '[:upper:]')
+	bottomtextlen=$(expr length "$bottomplaintext")
+	bottomtextfs=$((240 / ($bottomtextlen / 5 + 1) ))
+	
+	memestr="[v]drawtext=font='$font': \
+		textfile='$toptext': x=(w-tw)/2: y=(h-text_h)/6: reload=1: \
+		fontsize=$toptextfs: fontcolor='AntiqueWhite': borderw=4, \
+		drawtext=font='$font': \
+		textfile='$bottomtext':x=(w-tw)/2:y=5*(h-text_h)/6: reload=1: \
+		fontsize=$bottomtextfs: fontcolor='AntiqueWhite': borderw=4[v];"
+
+	filterstr="${filterstr}${memestr}" 
+fi
+
+# process rotate
+if [[ $rotate != false ]]
+then
+	rotatestr="[v]rotate=${rotatefactor}[v];"
+	filterstr="${filterstr}${rotatestr}"
+fi
+
+# remove whitespace from filter string
+filterstr=$(echo "$filterstr" | sed -r 's/\s+//g')
+
+filterstr="[0]split=1[v];${filterstr}[v]format=yuv420p[v]"
+ffmpegstr="ffmpeg $inputstr \
+	-filter_complex \"${filterstr}\" \
+	-map "[v]" -f v4l2 \"/dev/video$output\""
+
+# remove more whitespace
+ffmpegstr=$(echo "$ffmpegstr" | sed -r 's/\s+/ /g')
+
+if [[ $printffmpeg != false ]]
+then
+	echo "Generated command:"
+	echo "$ffmpegstr"
+fi
+
+sh -c "$ffmpegstr"

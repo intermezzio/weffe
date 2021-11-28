@@ -2,7 +2,10 @@ Webcam Video Effects
 
 Stream a video to a fake webcam or add effects to your current webcam video stream.
 
-./video_looper_complete.sh [-r] [-s] [-h] [-i number] [-o number] [-v filename] [-w filename] [-t text] [-b text] [-f text] [-B pattern] [-z pattern]
+./weffe [-a] [-r] [-s] [-h] [-p] [-S] [-i number] [-o number] [-v filename] [-w filename] [-t text] [-b text] [-f text] [-B pattern] [-z pattern]
+
+-a
+    activate the virtual webcam (requires sudo); use -o to choose a custom video stream
 
 -r
     slowly rotate the image or video over time
@@ -12,6 +15,12 @@ Stream a video to a fake webcam or add effects to your current webcam video stre
 
 -h
     view this help text
+
+-p
+    print the generated webcam command before executing it (for debugging only)
+
+-S
+    when blurring the background, use a strong blur
 
 -i number (default 0)
     input video stream number in /dev/video#; e.g. /dev/video0 for the default webcam
@@ -35,7 +44,7 @@ Stream a video to a fake webcam or add effects to your current webcam video stre
     font for meme-ified text
 
 -B pattern
-    blur pattern: choose from box, box-strong, doublebox, and doublebox-strong
+    blur pattern: choose from square, rect, portrait, circle, and ellipse
 
 -z pattern
     rotation as a function of time; not to be used with -r
