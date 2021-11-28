@@ -2,7 +2,10 @@ Webcam Video Effects
 
 Stream a video to a fake webcam or add effects to your current webcam video stream.
 
-./video_looper_complete.sh [-r] [-s] [-h] [-p] [-S] [-i number] [-o number] [-v filename] [-w filename] [-t text] [-b text] [-f text] [-B pattern] [-z pattern]
+./weffe [-a] [-r] [-s] [-h] [-p] [-S] [-i number] [-o number] [-v filename] [-w filename] [-t text] [-b text] [-f text] [-B pattern] [-z pattern]
+
+-a
+    activate the virtual webcam (requires sudo); use -o to choose a custom video stream
 
 -r
     slowly rotate the image or video over time

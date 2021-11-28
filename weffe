@@ -1,3 +1,5 @@
+#!/usr/bin/env sh
+
 # -v video.mp4
 # -r (rotate)
 # -s skip processing video (must have -v)
@@ -29,9 +31,12 @@ filterstr=""
 printffmpeg=false
 strongblur=false
 rotatefactor="2*PI*t/6"
+activate=false
 
-while getopts ":hv:rsi:o:w:t:b:f:z:B:Sp" opt; do
+while getopts ":hv:rsi:o:w:t:b:f:z:B:Spa" opt; do
   case $opt in
+  	a) activate=true
+	;;
     v) video="$OPTARG"
     ;;
     r) rotate=true
@@ -68,6 +73,14 @@ while getopts ":hv:rsi:o:w:t:b:f:z:B:Sp" opt; do
     ;;
   esac
 done
+
+if $activate
+then
+	echo "Initializing virtual camera at /dev/video${output}"
+	echo "This may require sudo access"
+	sudo modprobe v4l2loopback exlusive_caps=1 video_nr=$output card_label="Webcam Video Effects"
+	exit 0
+fi
 
 if [[ $video != false ]]
 then # if streaming a video
