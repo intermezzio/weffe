@@ -90,4 +90,4 @@ For more options, run the following command (or read the help page):
 Command | Output
 :-----:|:------:
 `./weffe -B portrait -w static/solid_frame.png` | ![Example 1](demo/example_1.png)
-`./weffe -B rect -t "what i call" -b "a living meme" -f Impact` | ![Example 2](demo/example_2.png)
+`./weffe -B rect -t "what i call" -b "a living meme" -f "Impact"` | ![Example 2](demo/example_2.png)
