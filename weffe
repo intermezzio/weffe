@@ -1,20 +1,8 @@
 #!/usr/bin/env sh
-
-# -v video.mp4
-# -r (rotate)
-# -s skip processing video (must have -v)
-# -i 0 (default video0 input)
-# -o 2 (default video2 output)
-# -w watermark.png
-# -t top text (meme)
-# -b bottom text (meme)
-# -f font (meme)
-# -B blur (format)
-
 video=false
 process=true
 input=0
-output=2
+output=7
 watermark=false
 toptext=false
 bottomtext=false
@@ -32,6 +20,7 @@ printffmpeg=false
 strongblur=false
 rotatefactor="2*PI*t/6"
 activate=false
+rootdir="$(dirname "$0")"
 
 while getopts ":hv:rsi:o:w:t:b:f:z:B:Spa" opt; do
   case $opt in
@@ -116,19 +105,19 @@ then
 
 	case $blurtype in 
 		square)
-			blurimg="static/blur_square.png"
+			blurimg="$rootdir/static/blur_square.png"
 		;;
 		rect)
-			blurimg="static/blur_rect.png"
+			blurimg="$rootdir/static/blur_rect.png"
 		;;
 		portrait)
-			blurimg="static/blur_portrait.png"
+			blurimg="$rootdir/static/blur_portrait.png"
 		;;
 		circle)
-			blurimg="static/blur_circle.png"
+			blurimg="$rootdir/static/blur_circle.png"
 		;;
 		ellipse)
-			blurimg="static/blur_ellipse.png"
+			blurimg="$rootdir/static/blur_ellipse.png"
 		;;
 		*) echo "Invalid blur type \"$blurtype\"" >&2
 			exit 0

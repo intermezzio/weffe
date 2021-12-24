@@ -72,7 +72,7 @@ Command | Output
 ### Looping a Video to the Webcam
 
 Save a video file in the directory. Most video formats should work with this script. I recommend using [Guvcview](http://guvcview.sourceforge.net/) for taking videos using the webcam.  
-Then, run the video looper script to generate a lengthened video and stream it to `/dev/video2`. This will create a longer mp4 file that gets streamed to the webcam. By default, the video gets duplicated and played in reverse after it completes so that there is no "jump" from the last frame to the first. To remove this functionality (and never play the video in reverse), also add the `-s` (skip processing) flag.
+Then, run the video looper script to generate a lengthened video and stream it to `/dev/video7`. This will create a longer mp4 file that gets streamed to the webcam. By default, the video gets duplicated and played in reverse after it completes so that there is no "jump" from the last frame to the first. To remove this functionality (and never play the video in reverse), also add the `-s` (skip processing) flag.
 ```sh
 ./weffe -v your_video.mp4
 ./weffe -sv dont_reverse_this_video.mp4
