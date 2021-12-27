@@ -149,10 +149,10 @@ if [[ $toptext != false ]] && [[ $bottomtext != false ]]
 then
 	if ! [[ -f $toptext ]] || ! [[ -f $bottomtext ]]
 	then
-		echo "$toptext" | tr '[:lower:]' '[:upper:]' > "top.txt"
-		echo "$bottomtext" | tr '[:lower:]' '[:upper:]' > "bottom.txt"
-		toptext="top.txt"
-		bottomtext="bottom.txt"
+		echo "$toptext" | tr '[:lower:]' '[:upper:]' > "$rootdir/top.txt"
+		echo "$bottomtext" | tr '[:lower:]' '[:upper:]' > "$rootdir/bottom.txt"
+		toptext="$rootdir/top.txt"
+		bottomtext="$rootdir/bottom.txt"
 	fi
 
 	topplaintext=$(more $toptext | tr '[:lower:]' '[:upper:]')
@@ -181,7 +181,8 @@ then
 fi
 
 # remove whitespace from filter string
-filterstr=$(echo "$filterstr" | sed -r 's/\s+//g')
+# TODO: allow whitespaces in file names and filter text string
+# filterstr=$(echo "$filterstr" | sed -r 's/\s+//g')
 
 filterstr="[0]split=1[v];${filterstr}[v]format=yuv420p[v]"
 ffmpegstr="ffmpeg $inputstr \
@@ -191,6 +192,7 @@ ffmpegstr="ffmpeg $inputstr \
 # remove more whitespace
 ffmpegstr=$(echo "$ffmpegstr" | sed -r 's/\s+/ /g')
 
+# print command
 if [[ $printffmpeg != false ]]
 then
 	echo "Generated command:"
