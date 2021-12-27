@@ -1,6 +1,6 @@
-# Webcam Video Effects 
+# Weffe
 
-Webcam Video Effects is a fast, lightweight webcam video enhancer. Add effects like a blurred background, overlayed images, and text to your webcam feed. This uses ffmpeg and v4l2loopback to output to a virtual webcam, which supports all video calls, including Zoom, WebEx, and Google Meet.
+Weffe is a fast, lightweight webcam video enhancer. Add effects like a blurred background, overlayed images, and text to your webcam feed. This uses ffmpeg and v4l2loopback to output to a virtual webcam, which supports all video calls, including Zoom, WebEx, and Google Meet.
 
 Before | After
 :-----:|:------:
