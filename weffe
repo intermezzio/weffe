@@ -47,7 +47,7 @@ while getopts ":hv:rsi:o:w:t:b:f:z:B:Spa" opt; do
     z) rotate=true
 		rotatefactor="$OPTARG"
     ;;
-    h) cat help.md
+    h) cat "$rootdir/help.md"
         exit 0
     ;;
     B) blur=true
