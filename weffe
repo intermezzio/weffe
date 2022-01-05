@@ -67,7 +67,7 @@ if $activate
 then
 	echo "Initializing virtual camera at /dev/video${output}"
 	echo "This may require sudo access"
-	sudo modprobe v4l2loopback exlusive_caps=1 video_nr=$output card_label="Webcam Video Effects"
+	sudo modprobe v4l2loopback exclusive_caps=1 video_nr=$output card_label="Webcam Video Effects"
 	exit 0
 fi
 
