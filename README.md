@@ -8,30 +8,35 @@ Before | After
 
 ## Installation
 
+### Arch
+This package is available on the AUR for Arch-based distros as shown below:
+```sh
+yay -S weffe-git
+```
+
+### Other Distros
 Clone the repository and install the dependencies below.
 
 Debian:
 ```sh
 sudo apt-get install ffmpeg v4l2loopback-dkms
 ```
-Arch:
-```sh
-sudo pacman -S ffmpeg v4l2loopback-dkms
-```
 
 Ensure that v4l2loopback-dkms is at version 0.12.5-1 or later to ensure full functionality.
+
+Replace `weffe` with `./weffe` if it's cloned this way.
 
 ## Setup
 
 To create a blank virtual webcam (that this script can stream to), first turn on the webcam with the `-a` flag:
 ```sh
-./weffe -a
+weffe -a
 ```
 _NOTE_: If you ran this command after starting an application like Zoom, you will have to restart Zoom to see the new webcam.
 
 ## Usage
 
-Running `./weffe` without arguments streams to a webcam with no effects. Insert one or more command line arguments to add effects to the video. These effects can all be used together unless otherwise specified.
+Running `weffe` without arguments streams to a webcam with no effects. Insert one or more command line arguments to add effects to the video. These effects can all be used together unless otherwise specified.
 
 ### Blur
 
@@ -39,8 +44,8 @@ This program blurs out pixels on the outer edge of the webcam feed and keeps the
 
 Command | Output
 :-----:|:------:
-`./weffe -B portrait` | ![Portrait blur](demo/blur_portrait.png)
-`./weffe -SB rect` | ![Rectangle blur](demo/blur_strong_rect.png)
+`weffe -B portrait` | ![Portrait blur](demo/blur_portrait.png)
+`weffe -SB rect` | ![Rectangle blur](demo/blur_strong_rect.png)
 
 ### Meme-ifying a Video
 
@@ -48,14 +53,14 @@ Adding top and bottom text to a video turns your video camera into a large meme,
 
 Command | Output
 :-----:|:------:
-`./weffe -t "HELLO WORLD" -b "BOTTOM TEXT" -f "Impact"` or <br /> `./weffe -t toptext.txt -b bottomtext.txt` | ![Meme text](demo/meme_text.png)
+`weffe -t "HELLO WORLD" -b "BOTTOM TEXT" -f "Impact"` or <br /> `weffe -t toptext.txt -b bottomtext.txt` | ![Meme text](demo/meme_text.png)
 
 ### Image Overlay
 
 Add an image over your screen - like a picture frame, company logo, or anything that you want using the `-w` flag (watermark). This should have transparency so that your video can still be seen behind it.
 Command | Output
 :-----:|:------:
-`./weffe -w static/tux.png` | ![Watermark](demo/with_tux.png)
+`weffe -w static/tux.png` | ![Watermark](demo/with_tux.png)
 
 ### Rotation
 
@@ -65,8 +70,8 @@ However, you can also create fancier rotations by making rotation angle a functi
 
 Command | Output
 :-----:|:------:
-`./weffe -r` | ![Rotate](demo/rotate.png)
-`./weffe -z "1/2*sin(PI/2*t)"` | ![Pendulum](demo/pendulum.png)
+`weffe -r` | ![Rotate](demo/rotate.png)
+`weffe -z "1/2*sin(PI/2*t)"` | ![Pendulum](demo/pendulum.png)
 
 
 ### Looping a Video to the Webcam
@@ -74,20 +79,20 @@ Command | Output
 Save a video file in the directory. Most video formats should work with this script. I recommend using [Guvcview](http://guvcview.sourceforge.net/) for taking videos using the webcam.  
 Then, run the video looper script to generate a lengthened video and stream it to `/dev/video7`. This will create a longer mp4 file that gets streamed to the webcam. By default, the video gets duplicated and played in reverse after it completes so that there is no "jump" from the last frame to the first. To remove this functionality (and never play the video in reverse), also add the `-s` (skip processing) flag.
 ```sh
-./weffe -v your_video.mp4
-./weffe -sv dont_reverse_this_video.mp4
+weffe -v your_video.mp4
+weffe -sv dont_reverse_this_video.mp4
 ```
 
 ### Extra Options
 
 For more options, run the following command (or read the help page):
 ```sh
-./weffe -h
+weffe -h
 ```
 
 ## More Examples
 
 Command | Output
 :-----:|:------:
-`./weffe -B portrait -w static/solid_frame.png` | ![Example 1](demo/example_1.png)
-`./weffe -B rect -t "what i call" -b "a living meme" -f "Impact"` | ![Example 2](demo/example_2.png)
+`weffe -B portrait -w static/solid_frame.png` | ![Example 1](demo/example_1.png)
+`weffe -B rect -t "what i call" -b "a living meme" -f "Impact"` | ![Example 2](demo/example_2.png)
