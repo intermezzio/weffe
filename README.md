@@ -24,7 +24,10 @@ sudo apt-get install ffmpeg v4l2loopback-dkms
 
 Ensure that v4l2loopback-dkms is at version 0.12.5-1 or later to ensure full functionality.
 
-Replace `weffe` with `./weffe` if it's cloned this way.
+Then run the command `install.sh` to install this locally.
+Note: do not use this method if you are installing it via the AUR.
+
+This can be uninstalled by running `uninstall.sh`.
 
 ## Setup
 
