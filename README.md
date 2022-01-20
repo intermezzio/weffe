@@ -1,6 +1,6 @@
 # Weffe
 
-Weffe is a fast, lightweight webcam video enhancer. Add effects like a blurred background, overlayed images, and text to your webcam feed. This uses ffmpeg and v4l2loopback to output to a virtual webcam, which supports all video calls, including Zoom, WebEx, and Google Meet.
+Weffe is a fast, lightweight webcam video enhancer. Add effects like a blurred background, overlaid images, and text to your webcam feed. This uses ffmpeg and v4l2loopback to output to a virtual webcam, which supports all video calls, including Zoom, WebEx, and Google Meet.
 
 Before | After
 :-----:|:------:
@@ -22,7 +22,7 @@ Debian:
 sudo apt-get install ffmpeg v4l2loopback-dkms
 ```
 
-Ensure that v4l2loopback-dkms is at version 0.12.5-1 or later to ensure full functionality.
+Ensure that v4l2loopback-dkms is version 0.12.5-1 or later to ensure full functionality.
 
 Then run the command `install.sh` to install this locally.
 Note: do not use this method if you are installing it via the AUR.
@@ -60,7 +60,7 @@ Command | Output
 
 ### Image Overlay
 
-Add an image over your screen - like a picture frame, company logo, or anything that you want using the `-w` flag (watermark). This should have transparency so that your video can still be seen behind it.
+Add an image over your screen - like a picture frame, company logo, or anything you want using the `-w` flag (watermark). This should have background transparency so that your video can still be seen behind it.
 Command | Output
 :-----:|:------:
 `weffe -w static/tux.png` | ![Watermark](demo/with_tux.png)
