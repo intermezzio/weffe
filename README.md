@@ -99,3 +99,7 @@ Command | Output
 :-----:|:------:
 `weffe -B portrait -w static/solid_frame.png` | ![Example 1](demo/example_1.png)
 `weffe -B rect -t "what i call" -b "a living meme" -f "Impact"` | ![Example 2](demo/example_2.png)
+
+## How to Pronounce "Weffe"
+
+Most software names or commands don't include this but it seems important to know how to pronounce "weffe" if it ever comes up. Weffe is short for **W**ebcam **Effe**cts, and there are two accepted ways to pronounce it. One is to pronounce it like the first part of the word "effects" with the letter "w" in front, e.g. as if it were spelled "weffè", or "weh-FEH". Another accepted pronunciation is to pronounce it with a long e sound at the end, like "WEH-fee".
