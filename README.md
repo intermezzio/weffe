@@ -1,6 +1,6 @@
 # Weffe
 
-Weffe is a fast, lightweight webcam video enhancer. Add effects like a blurred background, overlaid images, and text to your webcam feed. This uses ffmpeg and v4l2loopback to output to a virtual webcam, which supports all video calls, including Zoom, WebEx, and Google Meet.
+Weffe is a fast, lightweight webcam video enhancer that can add effects like a blurred background, overlaid images, and text to your webcam feed. This uses ffmpeg and v4l2loopback to output to a virtual webcam, which supports all video calls, including Zoom, WebEx, and Google Meet.
 
 Before | After
 :-----:|:------:
@@ -102,4 +102,4 @@ Command | Output
 
 ## How to Pronounce "Weffe"
 
-Most software names or commands don't include this but it seems important to know how to pronounce "weffe" if it ever comes up. Weffe is short for **W**ebcam **Effe**cts, and there are two accepted ways to pronounce it. One is to pronounce it like the first part of the word "effects" with the letter "w" in front, e.g. as if it were spelled "weffè", or "weh-FEH". Another accepted pronunciation is to pronounce it with a long e sound at the end, like "WEH-fee".
+Most software names or commands don't include this but it seems important to know how to pronounce "weffe" if it ever comes up. Weffe is short for **W**ebcam **Effe**cts, and there are two accepted ways to pronounce it. One is to pronounce it like the first part of the word "effects" with the letter "w" in front, e.g. as if it were spelled "weffè", or "weh-FEH". Other accepted pronunciations include pronouncing it with a long e sound at the end, like "WEH-fee" or with an a sound at the end, like "WEH-fay".
