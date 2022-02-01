@@ -9,6 +9,10 @@ echo "#!/bin/bash
 install -Dm755 ./tempbin "/usr/local/bin/weffe"
 rm ./tempbin
 
+sudo echo "v4l2loopback" > /etc/modules-load.d/v4l2loopback.conf
+sudo echo "options v4l2loopback video_nr=7 card_label=\"Weffe\" exclusive_caps=1" > /etc/modprobe.d/v4l2loopback.conf
+sudo update-initramfs -c -k $(uname -r)
+
 version=$(git describe --long | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g')
 
 echo "Successfully installed weffe v$version locally"
