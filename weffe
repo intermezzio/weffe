@@ -21,8 +21,11 @@ strongblur=false
 rotatefactor="2*PI*t/6"
 activate=false
 rootdir="$(dirname "$0")"
+persistent=false
 
-while getopts ":hv:rsi:o:w:t:b:f:z:B:Spa" opt; do
+set -e
+
+while getopts ":hv:rsi:o:w:t:b:f:z:B:SpaP" opt; do
   case $opt in
   	a) activate=true
 	;;
@@ -57,6 +60,8 @@ while getopts ":hv:rsi:o:w:t:b:f:z:B:Spa" opt; do
 	;;
 	p) printffmpeg=true
 	;;
+	P) persistent=true
+	;;
     \?) echo "Invalid option -$OPTARG" >&2
 		exit 0
     ;;
@@ -71,6 +76,8 @@ then
 	exit 0
 fi
 
+firstinput=false
+
 if [[ $video != false ]]
 then # if streaming a video
 	if [[ $process = true ]]
@@ -82,8 +89,10 @@ then # if streaming a video
         \cp -r "$video" stream.mp4
     fi
     inputstr="-stream_loop -1 -re -i stream.mp4"
+    firstinput="stream.mp4"
 else # if streaming from a webcam
 	inputstr="-i /dev/video$input"
+	firstinput="/dev/video$input"
 fi
 
 # process blur background
@@ -184,9 +193,16 @@ fi
 # TODO: allow whitespaces in file names and filter text string
 # filterstr=$(echo "$filterstr" | sed -r 's/\s+//g')
 
+outputsize=$(ffprobe -v error -show_entries stream=width,height -of csv=p=0:s=x $firstinput)
+
 filterstr="[0]split=1[v];${filterstr}[v]format=yuv420p[v]"
-ffmpegstr="ffmpeg $inputstr \
+alt_filterstr="color=c=#543c00:s=$outputsize,format=yuv420p[v]"
+
+ffmpegstr="ffmpeg -hide_banner -loglevel warning $inputstr \
 	-filter_complex \"${filterstr}\" \
+	-map "[v]" -f v4l2 \"/dev/video$output\""
+alt_ffmpegstr="ffmpeg -hide_banner -loglevel warning \
+	-filter_complex \"${alt_filterstr}\" \
 	-map "[v]" -f v4l2 \"/dev/video$output\""
 
 # remove more whitespace
@@ -199,4 +215,25 @@ then
 	echo "$ffmpegstr"
 fi
 
-sh -c "$ffmpegstr"
+if [[ $persistent == false ]]
+then
+	while true
+	do
+		printf "Waiting for camera to be opened...\n"
+		sh -c "$alt_ffmpegstr" &
+		pid=$!
+		sleep 0.1 # wait for camera to stop thinking it's still open
+		inotifywait -qq -e open /dev/video$output
+		printf "Camera opened\n"
+		kill $pid
+		sh -c "$ffmpegstr" &
+		pid=$!
+		printf "Waiting for close\n"
+		inotifywait -qq -e close /dev/video$output
+		printf "Closed, revert to simple film\n"
+		kill $pid &
+		tail --pid=$! -f /dev/null
+	done
+else
+	sh -c "$ffmpegstr"
+fi
