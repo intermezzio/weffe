@@ -215,25 +215,76 @@ then
 	echo "$ffmpegstr"
 fi
 
-if [[ $persistent == false ]]
+if [[ $persistent != false ]]
 then
-	while true
-	do
-		printf "Waiting for camera to be opened...\n"
-		sh -c "$alt_ffmpegstr" &
-		pid=$!
-		sleep 0.1 # wait for camera to stop thinking it's still open
-		inotifywait -qq -e open /dev/video$output
-		printf "Camera opened\n"
-		kill $pid
-		sh -c "$ffmpegstr" &
-		pid=$!
-		printf "Waiting for close\n"
-		inotifywait -qq -e close /dev/video$output
-		printf "Closed, revert to simple film\n"
-		kill $pid &
-		tail --pid=$! -f /dev/null
-	done
-else
 	sh -c "$ffmpegstr"
+	exit
 fi
+
+set +e
+state_machine='
+	BEGIN {
+		state = "START_IDLE"
+		print "IDLE"
+	}
+	/OPEN/ {
+		if (state == "START_IDLE") {
+			state = "IDLE"
+		} else if (state == "IDLE") {
+			state = "STOP_IDLE"
+			print "STOP"
+		} else if (state == "START_STREAM") {
+			state = "STREAM"
+		} else if (state == "ABORT_STREAM") {
+			state = "STOP_STREAM"
+			print "STOP"
+		} else if (state == "STOP_STREAM") {
+			state = "RESTART_STREAM"
+		} else {
+			print "Unexpected OPEN event in state " state
+			next
+		}
+	}
+	/CLOSE/ {
+		if (state == "IDLE") {
+			exit
+		} else if (state == "STOP_IDLE" || state == "RESTART_STREAM") {
+			state = "START_STREAM"
+			print "STREAM"
+		} else if (state == "START_STREAM") {
+			state = "ABORT_STREAM"
+		} else if (state == "STREAM") {
+			state = "STOP_STREAM"
+			print "STOP"
+		} else if (state == "STOP_STREAM") {
+			state = "START_IDLE"
+			print "IDLE"
+		} else {
+			print "Unexpected CLOSE event in state " state
+			next
+		}
+	}
+	{
+		print "<" state ">"
+	}'
+
+set -e
+
+inotifywait -q -me open,close /dev/video$output \
+	| stdbuf -oL awk "$state_machine" \
+	| while read -r action
+		do
+			echo "$action"
+			if [ "$action" = "IDLE" ]
+			then
+				sh -c "$alt_ffmpegstr" &
+				pid=$!
+			elif [ "$action" = "STREAM" ]
+			then
+				sh -c "$ffmpegstr" &
+				pid=$!
+			elif [ "$action" = "STOP" ]
+			then
+				kill $pid &
+			fi
+		done
