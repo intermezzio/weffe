@@ -72,7 +72,7 @@ if $activate
 then
 	echo "Initializing virtual camera at /dev/video${output}"
 	echo "This may require sudo access"
-	sudo modprobe v4l2loopback exclusive_caps=1 video_nr=$output card_label="Webcam Video Effects"
+	sudo modprobe v4l2loopback exclusive_caps=1 video_nr=$output card_label="Weffe"
 	exit 0
 fi
 
@@ -82,9 +82,11 @@ if [[ $video != false ]]
 then # if streaming a video
 	if [[ $process = true ]]
 	then # process the video input
-        ffmpeg -y -i "$video" -filter_complex "[0]split=2[fr][rv]; \
+		echo "Pre-processing $video"
+        ffmpeg -hide_banner -loglevel warning -y -i "$video" -filter_complex "[0]split=2[fr][rv]; \
             [rv]reverse[rv];[fr][rv]concat=n=2:v=1:a=0,format=yuv420p[v]" \
             -map "[v]" -g 30 stream.mp4
+        echo "Finished processing $video"
     else
         \cp -r "$video" stream.mp4
     fi
@@ -196,7 +198,7 @@ fi
 outputsize=$(ffprobe -v error -show_entries stream=width,height -of csv=p=0:s=x $firstinput)
 
 filterstr="[0]split=1[v];${filterstr}[v]format=yuv420p[v]"
-alt_filterstr="color=c=#543c00:s=$outputsize,format=yuv420p[v]"
+alt_filterstr="color=c=#543c00:s=$outputsize,realtime,format=yuv420p[v]"
 
 ffmpegstr="ffmpeg -hide_banner -loglevel warning $inputstr \
 	-filter_complex \"${filterstr}\" \
@@ -225,9 +227,11 @@ set +e
 state_machine='
 	BEGIN {
 		state = "START_IDLE"
+		count = 0
 		print "IDLE"
 	}
 	/OPEN/ {
+		count++
 		if (state == "START_IDLE") {
 			state = "IDLE"
 		} else if (state == "IDLE") {
@@ -240,22 +244,29 @@ state_machine='
 			print "STOP"
 		} else if (state == "STOP_STREAM") {
 			state = "RESTART_STREAM"
+		} else if (state == "STOP_IDLE" || state == "STREAM" || state == "RESTART_STREAM" ) {
+			# Waiting for previous instance to close to switch streams.
 		} else {
 			print "Unexpected OPEN event in state " state
 			next
 		}
 	}
 	/CLOSE/ {
+		count--
 		if (state == "IDLE") {
 			exit
 		} else if (state == "STOP_IDLE" || state == "RESTART_STREAM") {
 			state = "START_STREAM"
 			print "STREAM"
 		} else if (state == "START_STREAM") {
-			state = "ABORT_STREAM"
+			if (count == 0) {
+				state = "ABORT_STREAM"
+			}
 		} else if (state == "STREAM") {
-			state = "STOP_STREAM"
-			print "STOP"
+			if (count == 1) {
+				state = "STOP_STREAM"
+				print "STOP"
+			}
 		} else if (state == "STOP_STREAM") {
 			state = "START_IDLE"
 			print "IDLE"
@@ -265,7 +276,7 @@ state_machine='
 		}
 	}
 	{
-		print "<" state ">"
+		print "<" state " @ " count ">"
 	}'
 
 set -e
