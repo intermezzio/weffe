@@ -21,8 +21,11 @@ strongblur=false
 rotatefactor="2*PI*t/6"
 activate=false
 rootdir="$(dirname "$0")"
+monitor=false
 
-while getopts ":hv:rsi:o:w:t:b:f:z:B:Spa" opt; do
+set -e
+
+while getopts ":hv:rsi:o:w:t:b:f:z:B:SpaM" opt; do
   case $opt in
   	a) activate=true
 	;;
@@ -57,6 +60,8 @@ while getopts ":hv:rsi:o:w:t:b:f:z:B:Spa" opt; do
 	;;
 	p) printffmpeg=true
 	;;
+	M) monitor=true
+	;;
     \?) echo "Invalid option -$OPTARG" >&2
 		exit 0
     ;;
@@ -67,23 +72,29 @@ if $activate
 then
 	echo "Initializing virtual camera at /dev/video${output}"
 	echo "This may require sudo access"
-	sudo modprobe v4l2loopback exclusive_caps=1 video_nr=$output card_label="Webcam Video Effects"
+	sudo modprobe v4l2loopback exclusive_caps=1 video_nr=$output card_label="Weffe"
 	exit 0
 fi
+
+firstinput=false
 
 if [[ $video != false ]]
 then # if streaming a video
 	if [[ $process = true ]]
 	then # process the video input
-        ffmpeg -y -i "$video" -filter_complex "[0]split=2[fr][rv]; \
+		echo "Pre-processing $video"
+        ffmpeg -hide_banner -loglevel warning -y -i "$video" -filter_complex "[0]split=2[fr][rv]; \
             [rv]reverse[rv];[fr][rv]concat=n=2:v=1:a=0,format=yuv420p[v]" \
             -map "[v]" -g 30 stream.mp4
+        echo "Finished processing $video"
     else
         \cp -r "$video" stream.mp4
     fi
     inputstr="-stream_loop -1 -re -i stream.mp4"
+    firstinput="stream.mp4"
 else # if streaming from a webcam
 	inputstr="-i /dev/video$input"
+	firstinput="/dev/video$input"
 fi
 
 # process blur background
@@ -184,9 +195,17 @@ fi
 # TODO: allow whitespaces in file names and filter text string
 # filterstr=$(echo "$filterstr" | sed -r 's/\s+//g')
 
+outputsize=$(ffprobe -v error -show_entries stream=width,height -of csv=p=0:s=x $firstinput)
+
 filterstr="[0]split=1[v];${filterstr}[v]format=yuv420p[v]"
-ffmpegstr="ffmpeg $inputstr \
+alt_filterstr="color=c=#543c00:s=$outputsize,realtime,format=yuv420p[v]"
+
+# potentially add -loglevel warning in a -q flag
+ffmpegstr="ffmpeg -hide_banner $inputstr \
 	-filter_complex \"${filterstr}\" \
+	-map "[v]" -f v4l2 \"/dev/video$output\""
+alt_ffmpegstr="ffmpeg -hide_banner \
+	-filter_complex \"${alt_filterstr}\" \
 	-map "[v]" -f v4l2 \"/dev/video$output\""
 
 # remove more whitespace
@@ -199,4 +218,85 @@ then
 	echo "$ffmpegstr"
 fi
 
-sh -c "$ffmpegstr"
+if [[ $monitor == false ]]
+then
+	sh -c "$ffmpegstr"
+	exit
+fi
+
+set +e
+state_machine='
+	BEGIN {
+		state = "START_IDLE"
+		count = 0
+		print "IDLE"
+	}
+	/OPEN/ {
+		count++
+		if (state == "START_IDLE") {
+			state = "IDLE"
+		} else if (state == "IDLE") {
+			state = "STOP_IDLE"
+			print "STOP"
+		} else if (state == "START_STREAM") {
+			state = "STREAM"
+		} else if (state == "ABORT_STREAM") {
+			state = "STOP_STREAM"
+			print "STOP"
+		} else if (state == "STOP_STREAM") {
+			state = "RESTART_STREAM"
+		} else if (state == "STOP_IDLE" || state == "STREAM" || state == "RESTART_STREAM" ) {
+			# Waiting for previous instance to close to switch streams.
+		} else {
+			print "Unexpected OPEN event in state " state
+			next
+		}
+	}
+	/CLOSE/ {
+		count--
+		if (state == "IDLE") {
+			exit
+		} else if (state == "STOP_IDLE" || state == "RESTART_STREAM") {
+			state = "START_STREAM"
+			print "STREAM"
+		} else if (state == "START_STREAM") {
+			if (count == 0) {
+				state = "ABORT_STREAM"
+			}
+		} else if (state == "STREAM") {
+			if (count == 1) {
+				state = "STOP_STREAM"
+				print "STOP"
+			}
+		} else if (state == "STOP_STREAM") {
+			state = "START_IDLE"
+			print "IDLE"
+		} else {
+			print "Unexpected CLOSE event in state " state
+			next
+		}
+	}
+	{
+		print "<" state " @ " count ">"
+	}'
+
+set -e
+
+inotifywait -q -me open,close /dev/video$output \
+	| stdbuf -oL awk "$state_machine" \
+	| while read -r action
+		do
+			echo "$action"
+			if [ "$action" = "IDLE" ]
+			then
+				sh -c "$alt_ffmpegstr" &
+				pid=$!
+			elif [ "$action" = "STREAM" ]
+			then
+				sh -c "$ffmpegstr" &
+				pid=$!
+			elif [ "$action" = "STOP" ]
+			then
+				kill $pid &
+			fi
+		done

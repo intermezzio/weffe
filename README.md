@@ -19,7 +19,7 @@ Clone the repository and install the dependencies below.
 
 Debian:
 ```sh
-sudo apt-get install ffmpeg v4l2loopback-dkms
+sudo apt-get install ffmpeg v4l2loopback-dkms inotify-tools
 ```
 
 Ensure that v4l2loopback-dkms is version 0.12.5-1 or later to ensure full functionality.
@@ -84,6 +84,14 @@ Then, run the video looper script to generate a lengthened video and stream it t
 ```sh
 weffe -v your_video.mp4
 weffe -sv dont_reverse_this_video.mp4
+```
+
+### Monitor Output
+
+This option, released in v1.1, checks if the virtual webcam is being fed into an application (e.g. video calling software) and runs the webcam on demand. This feature is good if there are a lot of effects on the webcam as it can save computer resources while video calling platforms are off. In the off time, it streams a blank color to the webcam. However, it is still being tested and does not work when applications regularly probe the webcam to check if it's streaming (e.g. Discord opens and closes the webcam approx. every 3 seconds). This option requires the optional `inotify-tools` dependency.
+
+```sh
+weffe -M
 ```
 
 ### Extra Options
