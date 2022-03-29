@@ -21,11 +21,11 @@ strongblur=false
 rotatefactor="2*PI*t/6"
 activate=false
 rootdir="$(dirname "$0")"
-persistent=false
+monitor=false
 
 set -e
 
-while getopts ":hv:rsi:o:w:t:b:f:z:B:SpaP" opt; do
+while getopts ":hv:rsi:o:w:t:b:f:z:B:SpaM" opt; do
   case $opt in
   	a) activate=true
 	;;
@@ -60,7 +60,7 @@ while getopts ":hv:rsi:o:w:t:b:f:z:B:SpaP" opt; do
 	;;
 	p) printffmpeg=true
 	;;
-	P) persistent=true
+	M) monitor=true
 	;;
     \?) echo "Invalid option -$OPTARG" >&2
 		exit 0
@@ -200,10 +200,11 @@ outputsize=$(ffprobe -v error -show_entries stream=width,height -of csv=p=0:s=x 
 filterstr="[0]split=1[v];${filterstr}[v]format=yuv420p[v]"
 alt_filterstr="color=c=#543c00:s=$outputsize,realtime,format=yuv420p[v]"
 
-ffmpegstr="ffmpeg -hide_banner -loglevel warning $inputstr \
+# potentially add -loglevel warning in a -q flag
+ffmpegstr="ffmpeg -hide_banner $inputstr \
 	-filter_complex \"${filterstr}\" \
 	-map "[v]" -f v4l2 \"/dev/video$output\""
-alt_ffmpegstr="ffmpeg -hide_banner -loglevel warning \
+alt_ffmpegstr="ffmpeg -hide_banner \
 	-filter_complex \"${alt_filterstr}\" \
 	-map "[v]" -f v4l2 \"/dev/video$output\""
 
@@ -217,7 +218,7 @@ then
 	echo "$ffmpegstr"
 fi
 
-if [[ $persistent != false ]]
+if [[ $monitor == false ]]
 then
 	sh -c "$ffmpegstr"
 	exit

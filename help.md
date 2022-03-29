@@ -2,7 +2,7 @@ Webcam Video Effects
 
 Stream a video to a fake webcam or add effects to your current webcam video stream.
 
-./weffe [-a] [-r] [-s] [-h] [-p] [-S] [-i number] [-o number] [-v filename] [-w filename] [-t text] [-b text] [-f text] [-B pattern] [-z pattern]
+./weffe [-a] [-r] [-s] [-h] [-p] [-M] [-S] [-i number] [-o number] [-v filename] [-w filename] [-t text] [-b text] [-f text] [-B pattern] [-z pattern]
 
 -a
     activate the virtual webcam (requires sudo); use -o to choose a custom video stream
@@ -18,6 +18,9 @@ Stream a video to a fake webcam or add effects to your current webcam video stre
 
 -p
     print the generated webcam command before executing it (for debugging only)
+
+-M
+    monitor output streams and only stream the output when an application is trying to access it
 
 -S
     when blurring the background, use a strong blur
