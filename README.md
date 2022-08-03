@@ -19,7 +19,7 @@ Clone the repository and install the dependencies below.
 
 Debian:
 ```sh
-sudo apt-get install ffmpeg v4l2loopback-dkms inotify-tools
+sudo apt install ffmpeg v4l2loopback-dkms inotify-tools
 ```
 
 Ensure that v4l2loopback-dkms is version 0.12.5-1 or later to ensure full functionality.
