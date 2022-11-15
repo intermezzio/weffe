@@ -1,5 +1,8 @@
 # Weffe
 
+[<img src="https://aur.archlinux.org/static/css/archnavbar/aurlogo.png" width="96" />](https://aur.archlinux.org/packages/weffe-git)
+[<img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="96" />](https://www.buymeacoffee.com/intermezzio)
+
 Weffe is a fast, lightweight webcam video enhancer that can add effects like a blurred background, overlaid images, and text to your webcam feed. This uses ffmpeg and v4l2loopback to output to a virtual webcam, which supports all video calls, including Zoom, WebEx, and Google Meet.
 
 Before | After
