@@ -23,9 +23,9 @@ activate=false
 rootdir="$(dirname "$0")"
 monitor=false
 
-set -e
+set +e
 
-while getopts ":hv:rsi:o:w:t:b:f:z:B:SpaM" opt; do
+while getopts ":hv:rsi:o:w:t:b:f:z:B:SpaMl" opt; do
   case $opt in
   	a) activate=true
 	;;
@@ -62,6 +62,10 @@ while getopts ":hv:rsi:o:w:t:b:f:z:B:SpaM" opt; do
 	;;
 	M) monitor=true
 	;;
+	l) printf "v4l2-ctl --list-devices\n\n"
+		v4l2-ctl --list-devices
+		exit 0
+	;;
     \?) echo "Invalid option -$OPTARG" >&2
 		exit 0
     ;;
@@ -72,7 +76,16 @@ if $activate
 then
 	echo "Initializing virtual camera at /dev/video${output}"
 	echo "This may require sudo access"
+	modstatus=$( lsmod | grep v4l2loopback 2>&1 )
+	if [ -z "$modstatus" ]
+	then
+		echo "No existing virtual camera found"
+	else
+		echo "Removing existing virtual camera"
+		sudo modprobe -r v4l2loopback
+	fi
 	sudo modprobe v4l2loopback exclusive_caps=1 video_nr=$output card_label="Weffe"
+	echo "Initialized"
 	exit 0
 fi
 

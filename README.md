@@ -40,6 +40,11 @@ weffe -a
 ```
 _NOTE_: If you ran this command after starting an application like Zoom, you will have to restart Zoom to see the new webcam.
 
+To see what virtual cameras are already initialized, use the `-L` (list) flag:
+```sh
+weffe -L
+```
+
 ## Usage
 
 Running `weffe` without arguments streams to a webcam with no effects. Insert one or more command line arguments to add effects to the video. These effects can all be used together unless otherwise specified.
@@ -89,9 +94,9 @@ weffe -v your_video.mp4
 weffe -sv dont_reverse_this_video.mp4
 ```
 
-### Monitor Output
+### Monitor Output (beta)
 
-This option, released in v1.1, checks if the virtual webcam is being fed into an application (e.g. video calling software) and runs the webcam on demand. This feature is good if there are a lot of effects on the webcam as it can save computer resources while video calling platforms are off. In the off time, it streams a blank color to the webcam. However, it is still being tested and does not work when applications regularly probe the webcam to check if it's streaming (e.g. Discord opens and closes the webcam approx. every 3 seconds). This option requires the optional `inotify-tools` dependency.
+This option checks if the virtual webcam is being fed into an application (e.g. video calling software) and runs the webcam on demand. This feature is good if there are a lot of effects on the webcam as it can save computer resources while video calling platforms are off. In the off time, it streams a blank color to the webcam. However, it is still being tested and does not work when applications regularly probe the webcam to check if it's streaming (e.g. Discord opens and closes the webcam approx. every 3 seconds). This option requires the optional `inotify-tools` dependency.
 
 ```sh
 weffe -M
