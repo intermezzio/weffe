@@ -1,4 +1,6 @@
-markdown: kramdown
-remote_theme: pages-themes/minimal@v0.2.0
-plugins:
-- jekyll-remote-theme # add this line to the plugins list if you already have one
+title: Wedde
+logo: /demo/blur_portrait.png
+description: Add effects to a webcam in Linux for Zoom, Webex, or other calls, or stream a video to a webcam, including blurred background
+show_downloads: false
+google_analytics:
+theme: jekyll-theme-minimal
