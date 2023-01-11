@@ -69,6 +69,7 @@ Command | Output
 ### Image Overlay
 
 Add an image over your screen - like a picture frame, company logo, or anything you want using the `-w` flag (watermark). This should have background transparency so that your video can still be seen behind it.
+
 Command | Output
 :-----:|:------:
 `weffe -w static/tux.png` | ![Watermark](demo/with_tux.png)
